@@ -1,0 +1,28 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next
+
+# production build
+/build
+
+# debug logs
+/out
+
+# lock files
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+
+# Environment variables
+/.env
+/.env.*
+!/.env.example
+
+# misc
+.DS_Store
+/tmp
+
+# testing
+/coverage

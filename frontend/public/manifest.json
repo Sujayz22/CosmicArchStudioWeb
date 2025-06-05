@@ -1,0 +1,16 @@
+{
+  "name": "Cosmic Arch Studio",
+  "short_name": "Cosmic Arch",
+  "description": "Modern Architectural Design Solutions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/tablogo.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    }
+  ]
+} 
