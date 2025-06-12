@@ -13,19 +13,25 @@ const Footer = () => {
     triggerOnce: false,
   });
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   return (
     <AnimatePresence>
-      <motion.footer 
+      <motion.footer
         ref={ref}
-        initial={{ opacity: 0, y: 50 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        exit={{ opacity: 0, y: 50 }}
-        transition={{ 
-          duration: 0.8, 
-          ease: "easeOut",
-          opacity: { duration: 0.6 },
-          y: { duration: 0.8 }
-        }}
+        initial={isMobile ? {} : { opacity: 0, y: 50 }}
+        animate={isMobile ? {} : inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        exit={isMobile ? {} : { opacity: 0, y: 50 }}
+        transition={
+          isMobile
+            ? {}
+            : {
+                duration: 0.8,
+                ease: 'easeOut',
+                opacity: { duration: 0.6 },
+                y: { duration: 0.8 },
+              }
+        }
         className="bg-primary text-white rounded-[2.5rem] mx-4 mb-4 md:mx-8 md:mb-12"
       >
         <motion.div 
@@ -35,7 +41,7 @@ const Footer = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="container-custom py-10 md:py-20"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             {/* Services Column */}
             <div className="space-y-6">
               <h3 className="text-xs uppercase tracking-wider text-neutral-300 flex md:items-center justify-center md:justify-start gap-2">
@@ -69,28 +75,6 @@ const Footer = () => {
                   </Link>
                 </li>
               </ul>
-            </div>
-
-            {/* Newsletter Column */}
-            <div className="h-fit space-y-4 bg-muted/55 backdrop-blur-sm rounded-[2rem] p-6 shadow-lg mx-auto w-full md:max-w-md">
-              <h3 className="text-s uppercase tracking-wider text-neutral-100 text-center">Sign up to our newsletter</h3>
-              <div className="relative">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email address"
-                  className="w-full bg-transparent border-b border-neutral-800 py-2 text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors"
-                />
-                <AnimatedSubscribeButton className="w-full mt-4">
-                  <span className="group inline-flex items-center justify-center w-full">
-                    Subscribe
-                    <ChevronRightIcon className="ml-1 size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                  <span className="group inline-flex items-center justify-center w-full">
-                    <CheckIcon className="mr-2 size-4" />
-                    Subscribed
-                  </span>
-                </AnimatedSubscribeButton>
-              </div>
             </div>
 
             {/* Sitemap Column */}
@@ -152,4 +136,4 @@ const Footer = () => {
   );
 };
 
-export default Footer; 
+export default Footer;

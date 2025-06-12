@@ -1,0 +1,132 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+
+export async function fetchAPI<T>(endpoint: string): Promise<T> {
+  const res = await fetch(`${API_URL}/api/${endpoint}`);
+  if (!res.ok) {
+    throw new Error(`API call failed: ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data;
+}
+
+interface ImageFormat {
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface ImageData {
+  id: number;
+  documentId: string;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: {
+    large: ImageFormat;
+    small: ImageFormat;
+    medium: ImageFormat;
+    thumbnail: ImageFormat;
+  };
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string | null;
+  provider: string;
+  provider_metadata: {
+    public_id: string;
+    resource_type: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface Gallery {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  tagline: string;
+  description: string;
+  collection: ImageData[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface GalleryResponse {
+  data: Gallery[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
+export interface FAQ {
+  id: number;
+  question: string;
+  answer: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface FAQResponse {
+  data: FAQ[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
+export interface KeyFeature {
+  title: string;
+  description: string;
+}
+
+export interface Project {
+  id: number;
+  Title: string;
+  type: string;
+  slug: string;
+  coverImage: ImageData;
+  showcase: ImageData[];
+  review: string;
+  description: string;
+  size: string;
+  theme: string;
+  duration: string;
+  location: string;
+  category: 'Residential' | 'Commercial';
+  client: string;
+  features: KeyFeature[];
+  services: string;
+  clientImage?: ImageData;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface ProjectResponse {
+  data: Project[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+} 

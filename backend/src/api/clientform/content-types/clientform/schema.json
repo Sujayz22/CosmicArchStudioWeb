@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "clientforms",
+  "info": {
+    "singularName": "clientform",
+    "pluralName": "clientforms",
+    "displayName": "clientform"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "biginteger"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Residential Design ",
+        "Commercial Design ",
+        "Interior Design ",
+        "Exterior Design ",
+        "Landscape Design ",
+        "Execution ",
+        "Furniture Design"
+      ]
+    },
+    "location": {
+      "type": "string"
+    },
+    "budget": {
+      "type": "string"
+    },
+    "size": {
+      "type": "biginteger"
+    },
+    "startDate": {
+      "type": "date"
+    },
+    "completionDate": {
+      "type": "date"
+    },
+    "Message": {
+      "type": "text"
+    }
+  }
+}

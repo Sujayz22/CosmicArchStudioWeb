@@ -1,30 +1,51 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
-
-const albums = [
-  {
-    title: "Residential Designs",
-    image: "/img(1).png",
-    slug: "residential-designs",
-  },
-  {
-    title: "Commercial Designs",
-    image: "/img(2).png",
-    slug: "commercial-designs",
-  },
-  {
-    title: "Exterior Designs",
-    image: "/img(3).png",
-    slug: "exterior-designs",
-  },
-];
+import { useEffect, useState } from "react";
+import { fetchAPI, GalleryResponse } from "@/lib/api";
 
 export default function GalleryPage() {
+  const [galleries, setGalleries] = useState<GalleryResponse['data']>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchGalleries = async () => {
+      try {
+        const response = await fetchAPI<GalleryResponse>('galleries?populate=*');
+        setGalleries(response.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch galleries');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGalleries();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-neutral-light flex flex-col items-center justify-center py-12">
+        <div className="text-2xl font-semibold">Loading galleries...</div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-neutral-light flex flex-col items-center justify-center py-12">
+        <div className="text-2xl font-semibold text-red-600">Error: {error}</div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
       {/* Title */}
       <div className="flex flex-col items-center mb-8 mt-20">
-        <span className="bg-yellow-300 rounded-2xl px-10 py-2 mb-4">
+        <span className="bg-secondary rounded-2xl px-10 py-2 mb-4">
           <h1 className="text-6xl md:text-7xl font-extrabold text-neutral-900 text-center inline-block">
             Gallery<span className="text-neutral-900">.</span>
           </h1>
@@ -36,26 +57,33 @@ export default function GalleryPage() {
       </div>
       {/* Cards */}
       <div className="flex flex-wrap gap-10 justify-center w-full max-w-6xl">
-        {albums.map((album) => (
-          <Link
-            key={album.slug}
-            href={`/gallery/${album.slug}`}
-            className="relative w-80 h-[26rem] rounded-2xl overflow-hidden shadow-lg bg-white transition-transform hover:scale-105"
-          >
-            <Image
-              src={album.image}
-              alt={album.title}
-              width={400}
-              height={400}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-0 left-0 w-full  bg-black/60 p-6 flex items-end">
-              <span className="text-2xl font-bold text-white drop-shadow-md w-full text-center">
-                {album.title}
-              </span>
-            </div>
-          </Link>
-        ))}
+        {galleries.map((gallery) => {
+          const coverImage = gallery.collection[0];
+          const imageUrl = coverImage?.formats?.large?.url || coverImage?.url;
+          
+          return (
+            <Link
+              key={gallery.id}
+              href={`/gallery/${gallery.slug}`}
+              className="relative w-80 h-[26rem] rounded-2xl overflow-hidden shadow-lg bg-white transition-transform hover:scale-105"
+            >
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt={gallery.title}
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute bottom-0 left-0 w-full bg-black/60 p-6 flex items-end">
+                <span className="text-2xl font-bold text-white drop-shadow-md w-full text-center">
+                  {gallery.title}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

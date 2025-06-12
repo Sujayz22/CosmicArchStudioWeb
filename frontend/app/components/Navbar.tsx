@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter, usePathname } from 'next/navigation';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileActiveDropdown, setMobileActiveDropdown] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const menuVariants = {
     closed: {
@@ -71,37 +74,21 @@ const Navbar = () => {
     }
   };
 
-  const serviceItems = [
-    {
-      title: "Architectural Design",
-      icon: "🏛️",
-      description: "Create stunning architectural designs"
-    },
-    {
-      title: "Space Planning",
-      icon: "📐",
-      description: "Optimize your space utilization"
-    },
-    {
-      title: "Residential Interiors",
-      icon: "🏠",
-      description: "Transform your living spaces"
-    },
-    {
-      title: "Commercial Interiors",
-      icon: "🏢",
-      description: "Design for business environments"
-    },
-    {
-      title: "Elevation Design",
-      icon: "🎨",
-      description: "Beautiful facade designs"
+
+
+  const handleServicesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (pathname === '/') {
+      window.dispatchEvent(new CustomEvent('scrollToServices'));
+    } else {
+      sessionStorage.setItem('scrollToServices', 'true');
+      router.push('/');
     }
-  ];
+  };
 
   return (
     <>
-      <nav className="fixed w-full z-50 bg-neutral-light/95 backdrop-blur-sm">
+      <nav className="fixed w-full z-[50] bg-neutral-light/95 backdrop-blur-sm" style={{position:'fixed',top:0,left:0,right:0}}>
         <div className="container-custom py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -132,40 +119,13 @@ const Navbar = () => {
                     onMouseEnter={() => setActiveDropdown('services')}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    <Link href="/services" className="text-neutral hover:text-primary px-4 py-2 rounded-full">
+                    <button
+                      type="button"
+                      onClick={handleServicesClick}
+                      className="text-neutral hover:text-primary px-4 py-2 rounded-full hover:bg-secondary transition-colors bg-transparent border-none cursor-pointer"
+                    >
                       Services
-                    </Link>
-                    <AnimatePresence>
-                      {activeDropdown === 'services' && (
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          exit="hidden"
-                          variants={dropdownVariants}
-                          className="absolute top-full left-0 mt-2 p-4 bg-white rounded-2xl min-w-[320px] shadow-lg grid grid-cols-1 gap-2"
-                        >
-                          {serviceItems.map((item, index) => (
-                            <motion.div
-                              key={item.title}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                            >
-                              <Link 
-                                href={`/services/${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-neutral-light transition-colors group"
-                              >
-                                <span className="text-xl">{item.icon}</span>
-                                <div>
-                                  <div className="font-medium text-neutral group-hover:text-primary transition-colors">{item.title}</div>
-                                  <div className="text-sm text-neutral/60 group-hover:text-neutral/80 transition-colors">{item.description}</div>
-                                </div>
-                              </Link>
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    </button>
                   </div>
                   <Link href="/projects" className="text-neutral hover:text-primary px-4 py-2 rounded-full hover:bg-secondary transition-colors">
                     Projects
@@ -234,77 +194,29 @@ const Navbar = () => {
             className="fixed inset-0 bg-neutral-light z-40 md:hidden"
           >
             <div className="flex flex-col items-start p-6 pt-24">
-              <Link 
-                href="/about" 
-                className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
+              <Link href="/" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+                Home
+              </Link>
+              <Link href="/about" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 About
               </Link>
-              <div className="w-full">
-                <button 
-                  className="w-full text-left text-neutral hover:text-primary py-4 hover: rounded-xl px-4 flex items-center justify-between transition-colors"
-                  onClick={() => setMobileActiveDropdown(mobileActiveDropdown === 'services' ? null : 'services')}
-                >
-                  <span>Services</span>
-                  <motion.span
-                    animate={{ rotate: mobileActiveDropdown === 'services' ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-l"
-                  >
-                    ▼
-                  </motion.span>
-                </button>
-                <AnimatePresence>
-                  {mobileActiveDropdown === 'services' && (
-                    <motion.div
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                      variants={mobileDropdownVariants}
-                      className="overflow-hidden"
-                    >
-                      <div className="pl-4 py-2 space-y-1">
-                        {serviceItems.map((item) => (
-                          <Link
-                            key={item.title}
-                            href={`/services/${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                            className="block p-3 rounded-xl hover:bg-secondary transition-colors group"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <div className="flex items-start gap-3">
-                              <span className="text-xl">{item.icon}</span>
-                              <div>
-                                <div className="font-medium text-neutral group-hover:text-primary transition-colors">{item.title}</div>
-                                <div className="text-sm text-neutral/60 group-hover:text-neutral/80 transition-colors">{item.description}</div>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              <Link 
-                href="/our-work" 
-                className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors"
-                onClick={() => setIsOpen(false)}
+              <button
+                type="button"
+                onClick={e => { handleServicesClick(e); setIsOpen(false); }}
+                className="w-full text-left text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors bg-transparent border-none cursor-pointer"
               >
-                Our work
+                Services
+              </button>
+              <Link href="/projects" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+                Projects
               </Link>
-              <Link 
-                href="/faqs" 
-                className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                FAQs
+              <Link href="/gallery" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+                Gallery
               </Link>
-              <Link 
-                href="/contact" 
-                className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
+              <Link href="/reviews" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+                Reviews
+              </Link>
+              <Link href="/contact" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Contact
               </Link>
             </div>

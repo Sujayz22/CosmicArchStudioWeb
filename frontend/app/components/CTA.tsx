@@ -1,11 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaInstagram, FaLinkedin, FaXTwitter, FaEnvelope, FaPhone, FaLocationDot } from 'react-icons/fa6';
-import { z } from 'zod';
 import { AnimatedSubscribeButton } from '@/components/magicui/animated-subscribe-button';
 import { useInView } from 'react-intersection-observer';
+import { ChevronRight, Check } from 'lucide-react';
+import { fetchAPI } from '@/lib/api';
+
+interface ContactData {
+  data: {
+    MonFritiming: string;
+    address: string;
+    createdAt: string;
+    documentId: string;
+    email: string;
+    id: number;
+    instagram: string | null;
+    linkedin: string | null;
+    linktoaddress: string;
+    phone: string;
+    publishedAt: string;
+    saturdaytiming: string;
+    showAddress: boolean;
+    showOfficeHours: boolean;
+    sundayTiming: string;
+    twitter: string | null;
+    updatedAt: string;
+  }
+}
 
 const projectTypes = [
   "Residential Design",
@@ -16,36 +39,41 @@ const projectTypes = [
   "Landscape Design"
 ] as const;
 
-// Zod schema for form validation
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  email: z.string().min(1, 'Email is required').email('Invalid email format'),
-  phone: z.string().min(1, 'Phone number is required')
-    .regex(/^\+?\d+$/, 'Only numbers and + symbol are allowed'),
-  projectType: z.enum(projectTypes, {
-    errorMap: () => ({ message: 'Please select a project type' }),
-  }),
-  location: z.string().min(1, 'Location is required'),
-  budget: z.string().min(1, 'Budget is required'),
-  projectSize: z.string().min(1, 'Project size is required'),
-  startDate: z.string().optional(),
-  completionDate: z.string().optional(),
-  message: z.string().min(1, 'Message is required').max(1000, 'Message is too long'),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
 const CTA = () => {
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: false,
   });
 
-  const [formData, setFormData] = useState<FormData>({
+  const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContactData = async () => {
+      try {
+        const data = await fetchAPI<ContactData>('contact');
+        console.log('Raw API response:', data);
+        if (!data || !data.data) {
+          throw new Error('Invalid data structure received from API');
+        }
+        setContactData(data);
+      } catch (error) {
+        console.error('Error fetching contact data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch contact data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactData();
+  }, []);
+
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    projectType: '' as any,
+    projectType: '',
     location: '',
     budget: '',
     projectSize: '',
@@ -54,74 +82,71 @@ const CTA = () => {
     message: ''
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      const validatedData = formSchema.parse(formData);
-      setErrors({});
-      
-      // Simulate successful form submission
-      console.log(validatedData);
-      
-      // Reset form after successful submission
-      setTimeout(() => {
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          projectType: '' as any,
-          location: '',
-          budget: '',
-          projectSize: '',
-          startDate: '',
-          completionDate: '',
-          message: ''
-        });
-      }, 2000);
-      
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: Partial<Record<keyof FormData, string>> = {};
-        error.errors.forEach((err) => {
-          if (err.path) {
-            fieldErrors[err.path[0] as keyof FormData] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-      }
-    }
+    // No validation, just log or send the data
+    console.log(formData);
+    setTimeout(() => {
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        projectType: '',
+        location: '',
+        budget: '',
+        projectSize: '',
+        startDate: '',
+        completionDate: '',
+        message: ''
+      });
+    }, 2000);
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    if (field === 'phone') {
-      if (value && !/^\+?\d*$/.test(value)) {
-        return;
-      }
-    }
-    
+  const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
   };
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth <= 768);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!contactData?.data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-red-500">No contact data available</div>
+      </div>
+    );
+  }
+
+  const contact = contactData.data;
+  console.log('Using contact data:', contact);
 
   return (
     <AnimatePresence>
-      <motion.div 
-        ref={ref}
-        initial={{ opacity: 0, y: 50 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        exit={{ opacity: 0, y: 50 }}
-        transition={{ 
-          duration: 0.8, 
-          ease: "easeOut",
-          opacity: { duration: 0.6 },
-          y: { duration: 0.8 }
-        }}
-        className="bg-primary rounded-[2.5rem] py-16 mx-4 mb-4 md:mx-8 md:mb-12"
+      {/* CTA Section */}
+      <div
+        id="cta-section"
+        className="bg-primary rounded-[2.5rem] py-4 mx-4 mb-4 md:mx-14 md:mb-12 md:py-16"
       >
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -130,21 +155,21 @@ const CTA = () => {
               <div className="space-y-6 bg-muted/55 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg">
                 <div
                   className="group cursor-email hover:bg-primary/30 p-2 rounded-lg transition-colors"
-                  onClick={() => window.location.href = 'mailto:info@cosmicarchstudio.com'}
+                  onClick={() => window.location.href = `mailto:${contact.email}`}
                   title="Send email"
                 >
                   <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2 flex items-center gap-2">
                     <FaEnvelope className="text-secondary" />
                     EMAIL
                   </h3>
-                  <p className="text-light text-lg group-hover:text-secondary transition-colors">
-                    info@cosmicarchstudio.com
+                  <p className="text-light text-lg group-hover:text-secondary transition-colors overflow-hidden text-ellipsis whitespace-nowrap">
+                    {isMobile ? `${contact.email.slice(0, 20)}...` : contact.email}
                   </p>
                 </div>
 
                 <div
                   className="group cursor-phone hover:bg-primary/30 p-2 rounded-lg transition-colors"
-                  onClick={() => window.location.href = 'tel:+919445796030'}
+                  onClick={() => window.location.href = `tel:+${contact.phone}`}
                   title="Call us"
                 >
                   <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2 flex items-center gap-2">
@@ -152,64 +177,95 @@ const CTA = () => {
                     PHONE
                   </h3>
                   <p className="text-light text-lg group-hover:text-secondary transition-colors">
-                    +91 94457 96030
+                    +91 {contact.phone}
                   </p>
                 </div>
 
-                <div
-                  className="group cursor-directions hover:bg-primary/30 p-2 rounded-lg transition-colors"
-                  onClick={() => window.open('https://maps.google.com/?q=150+Design+Avenue,+Suite+200+Creative+District,+NY+10001', '_blank')}
-                  title="Get directions"
-                >
-                  <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2 flex items-center gap-2">
-                    <FaLocationDot className="text-secondary" />
-                    OFFICE
-                  </h3>
-                  <p className="text-light text-lg group-hover:text-secondary transition-colors">
-                    150 Design Avenue, Suite 200<br />
-                    Creative District, NY 10001
-                  </p>
-                </div>
+                {contact.showAddress && (
+                  <div
+                    className="group cursor-directions hover:bg-primary/30 p-2 rounded-lg transition-colors"
+                    onClick={() => window.open(contact.linktoaddress, '_blank')}
+                    title="Get directions"
+                  >
+                    <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2 flex items-center gap-2">
+                      <FaLocationDot className="text-secondary" />
+                      OFFICE
+                    </h3>
+                    <p className="text-light text-lg group-hover:text-secondary transition-colors">
+                      {contact.address}
+                    </p>
+                  </div>
+                )}
 
-                <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
-                  <h3 className="text-sm uppercase tracking-wider text-light/60 mb-4">OPENING HOURS</h3>
-                  <div className="grid grid-cols-2 gap-y-3 text-sm sm:text-base">
-                    <div className="text-light">
-                      <span className="font-medium">Monday - Friday</span>
-                    </div>
-                    <div className="text-light/80 text-right">
-                      <span>9:00 AM - 6:00 PM</span>
-                    </div>
-                    <div className="text-light">
-                      <span className="font-medium">Saturday</span>
-                    </div>
-                    <div className="text-light/80 text-right">
-                      <span>10:00 AM - 4:00 PM</span>
-                    </div>
-                    <div className="text-light">
-                      <span className="font-medium">Sunday</span>
-                    </div>
-                    <div className="text-light/60 text-right">
-                      <span>Closed</span>
+                {contact.showOfficeHours && (
+                  <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
+                    <h3 className="text-sm uppercase tracking-wider text-light/60 mb-4">OPENING HOURS</h3>
+                    <div className="grid grid-cols-2 gap-y-3 text-sm sm:text-base">
+                      <div className="text-light">
+                        <span className="font-medium">Monday - Friday</span>
+                      </div>
+                      <div className="text-light/80 text-right">
+                        <span>{contact.MonFritiming}</span>
+                      </div>
+                      <div className="text-light">
+                        <span className="font-medium">Saturday</span>
+                      </div>
+                      <div className="text-light/80 text-right">
+                        <span>{contact.saturdaytiming}</span>
+                      </div>
+                      <div className="text-light">
+                        <span className="font-medium">Sunday</span>
+                      </div>
+                      <div className="text-light/60 text-right">
+                        <span>{contact.sundayTiming}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div>
                   <h3 className="text-sm uppercase tracking-wider text-light/60 mb-4">FOLLOW US</h3>
                   <div className="flex gap-4">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" 
-                       className="text-light hover:text-secondary hover:scale-110 transition-colors">
-                      <FaInstagram size={24} />
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                       className="text-light hover:text-secondary hover:scale-110 transition-colors">
-                      <FaLinkedin size={24} />
-                    </a>
-                    <a href="https://x.com" target="_blank" rel="noopener noreferrer"
-                       className="text-light hover:text-secondary hover:scale-110 transition-colors">
-                      <FaXTwitter size={24} />
-                    </a>
+                    {contact.instagram && (
+                      <a href={contact.instagram} target="_blank" rel="noopener noreferrer" 
+                         className="text-light hover:text-secondary hover:scale-110 transition-colors">
+                        <FaInstagram size={24} />
+                      </a>
+                    )}
+                    {contact.linkedin && (
+                      <a href={contact.linkedin} target="_blank" rel="noopener noreferrer"
+                         className="text-light hover:text-secondary hover:scale-110 transition-colors">
+                        <FaLinkedin size={24} />
+                      </a>
+                    )}
+                    {contact.twitter && (
+                      <a href={contact.twitter} target="_blank" rel="noopener noreferrer"
+                         className="text-light hover:text-secondary hover:scale-110 transition-colors">
+                        <FaXTwitter size={24} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Newsletter Section */}
+                <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
+                  <h3 className="text-sm uppercase tracking-wider text-light/60 text-center mb-4">Sign up to our newsletter</h3>
+                  <div className="relative">
+                    <input 
+                      type="email" 
+                      placeholder="Enter your email address"
+                      className="w-full bg-transparent border-b border-neutral-800 py-2 text-black placeholder:text-neutral-600 focus:outline-none focus:border-black transition-colors"
+                    />
+                    <AnimatedSubscribeButton className="w-full mt-4">
+                      <span className="group inline-flex items-center justify-center w-full">
+                        Subscribe
+                        <ChevronRight className="ml-1 size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
+                      <span className="group inline-flex items-center justify-center w-full">
+                        <Check className="mr-2 size-4" />
+                        Subscribed
+                      </span>
+                    </AnimatedSubscribeButton>
                   </div>
                 </div>
               </div>
@@ -230,11 +286,10 @@ const CTA = () => {
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${errors.name ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                       placeholder="John Doe"
                       required
                     />
-                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                   </div>
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-neutral-700 mb-1">
@@ -245,11 +300,10 @@ const CTA = () => {
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${errors.phone ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                       placeholder="+(91) XXXXX XXXXX"
                       required
                     />
-                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                   </div>
                 </div>
 
@@ -262,11 +316,10 @@ const CTA = () => {
                     id="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border ${errors.email ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                     placeholder="johndoe@email.com"
                     required
                   />
-                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -277,7 +330,7 @@ const CTA = () => {
                     id="projectType"
                     value={formData.projectType}
                     onChange={(e) => handleInputChange('projectType', e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border ${errors.projectType ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800`}
+                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800"
                     required
                   >
                     <option value="" className="text-neutral-400">Select...</option>
@@ -285,7 +338,6 @@ const CTA = () => {
                       <option key={type} value={type} className="text-neutral-800">{type}</option>
                     ))}
                   </select>
-                  {errors.projectType && <p className="text-red-500 text-sm mt-1">{errors.projectType}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -298,11 +350,10 @@ const CTA = () => {
                       id="location"
                       value={formData.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${errors.location ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                       placeholder="City, State"
                       required
                     />
-                    {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                   </div>
                   <div>
                     <label htmlFor="budget" className="block text-sm font-medium text-neutral-700 mb-1">
@@ -313,11 +364,10 @@ const CTA = () => {
                       id="budget"
                       value={formData.budget}
                       onChange={(e) => handleInputChange('budget', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${errors.budget ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                       placeholder="Enter your budget"
                       required
                     />
-                    {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
                   </div>
                   <div>
                     <label htmlFor="projectSize" className="block text-sm font-medium text-neutral-700 mb-1">
@@ -328,11 +378,10 @@ const CTA = () => {
                       id="projectSize"
                       value={formData.projectSize}
                       onChange={(e) => handleInputChange('projectSize', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${errors.projectSize ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400`}
+                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
                       placeholder="e.g., 1500"
                       required
                     />
-                    {errors.projectSize && <p className="text-red-500 text-sm mt-1">{errors.projectSize}</p>}
                   </div>
                 </div>
 
@@ -371,13 +420,12 @@ const CTA = () => {
                     id="message"
                     value={formData.message}
                     onChange={(e) => handleInputChange('message', e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border ${errors.message ? 'border-red-500' : 'border-neutral/20'} focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 min-h-[120px] mb-6`}
+                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 min-h-[120px] mb-6"
                     placeholder="Write your message here"
                   />
-                  {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
                 </div>
 
-                <AnimatedSubscribeButton className="w-full text-white" showConfetti={true}>
+                <AnimatedSubscribeButton className="w-full text-black" showConfetti={true}>
                   <span className="group inline-flex items-center justify-center">
                     Request Free Estimate
                   </span>
@@ -389,9 +437,9 @@ const CTA = () => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };
 
-export default CTA; 
+export default CTA;

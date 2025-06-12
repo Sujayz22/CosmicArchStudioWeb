@@ -1,136 +1,125 @@
 'use client';
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 
-const projects = [
-  {
-    slug: 'nivara-villa',
-    image: '/img(1).png',
-    title: 'Nivara Villa',
-    tags: ['Residential', 'Individual House'],
-    client: 'John Arnold',
-    location: 'Chennai',
-    services: 'Full Interior and Exterior Design',
-    duration: '5 Months',
-    theme: 'Modern Minimalism',
-    category: 'Residential',
-    type: 'Individual House',
-    size: '3000 sq ft.',
-  },
-  {
-    slug: 'urban-oasis',
-    image: '/img(2).png',
-    title: 'Urban Oasis',
-    tags: ['Commercial', 'Office Space'],
-    client: 'Tech Corp',
-    location: 'Bangalore',
-    services: 'Interior Design and Furnishing',
-    duration: '3 Months',
-    theme: 'Contemporary',
-    category: 'Commercial',
-    type: 'Office Space',
-    size: '5000 sq ft.',
-  },
-  {
-    slug: 'heritage-home',
-    image: '/img(3).png',
-    title: 'Heritage Home',
-    tags: ['Residential', 'Villa'],
-    client: 'Emily Clark',
-    location: 'Pune',
-    services: 'Restoration and Interior Design',
-    duration: '8 Months',
-    theme: 'Classic Heritage',
-    category: 'Residential',
-    type: 'Villa',
-    size: '4500 sq ft.',
-  },
-  {
-    slug: 'green-retreat',
-    image: '/img(4).png',
-    title: 'Green Retreat',
-    tags: ['Residential', 'Eco-Friendly'],
-    client: 'Eco Living',
-    location: 'Goa',
-    services: 'Sustainable Design and Landscaping',
-    duration: '6 Months',
-    theme: 'Eco-Friendly',
-    category: 'Residential',
-    type: 'Eco-Friendly House',
-    size: '3500 sq ft.',
-  },
-];
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { fetchAPI } from '@/lib/api';
+import type { Project } from '@/lib/api';
 
 const TABS = [
-  { label: 'All', value: 'All' },
+  { label: 'All', value: 'all' },
   { label: 'Residential', value: 'Residential' },
   { label: 'Commercial', value: 'Commercial' },
 ];
 
 export default function ProjectsPage() {
-  const [activeTab, setActiveTab] = useState('All');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedTab, setSelectedTab] = useState('all');
 
-  const filteredProjects =
-    activeTab === 'All'
-      ? projects
-      : projects.filter((project) => project.tags.includes(activeTab));
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetchAPI<{ data: Project[] }>('projects?populate=*');
+        setProjects(response.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const filteredProjects = selectedTab === 'all'
+    ? projects
+    : projects.filter((p) => p.category === selectedTab);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+        <div className="w-full max-w-6xl">
+          <div className="text-2xl font-semibold text-center">Loading projects...</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+        <div className="w-full max-w-6xl">
+          <div className="text-2xl font-semibold text-center text-red-500">Error: {error}</div>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-neutral-light py-12">
-      <div className="flex flex-col items-center">
+    <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+      <div className="w-full max-w-6xl">
         {/* Header */}
-        <div className="mb-8 mt-24">
-          <span className="inline-block bg-yellow-300 px-8 py-4 rounded-xl">
-            <span className="text-5xl md:text-6xl font-bold text-black">Projects.</span>
-          </span>
+        <div className="mt-32 mb-6 flex flex-col items-center">
+          <span className="bg-secondary px-8 py-2 rounded-[2rem] text-6xl font-bold text-black shadow-sm tracking-tight"><h1 className="text-6xl md:text-7xl font-extrabold text-neutral-900 text-center inline-block">
+            Projects<span className="text-neutral-900">.</span>
+          </h1></span>
+          {/* Tabs */}
+          <div className="mt-8 flex justify-center">
+            <div className="flex bg-[#E5E5E5] rounded-xl px-2 py-2 gap-2">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setSelectedTab(tab.value)}
+                  className={`px-5 py-1.5 rounded-md font-medium transition-colors text-base
+                    ${selectedTab === tab.value
+                      ? 'bg-[#4B6B4A] text-white shadow'
+                      : 'bg-transparent text-black hover:bg-[#d1d5db]'}
+                  `}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        {/* Tabs */}
-        <div className="flex gap-2 mb-10 ">
-          {TABS.map((tab) => (
-            <button
-              key={tab.value}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.value
-                  ? 'bg-green-700 text-white shadow-sm'
-                  : 'bg-gray-200 text-black'
-              }`}
-              onClick={() => setActiveTab(tab.value)}
+
+        {/* Projects Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredProjects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/projects/${project.slug}`}
+              className="group relative overflow-hidden rounded-[2rem] bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
             >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl px-4">
-          {filteredProjects.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-500 text-lg py-12">No projects found.</div>
-          ) : (
-            filteredProjects.map((project) => (
-              <Link key={project.slug} href={`/projects/${project.slug}`} className="block group">
-                <div className="relative rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-transform duration-300 hover:scale-105">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={400}
-                    height={500}
-                    className="object-cover w-full h-[400px]"
-                  />
-                  {/* Overlay */}
-                  <div className="absolute bottom-0 left-0 w-full  bg-black/60 p-4">
-                    <div className="text-white text-lg font-semibold mb-2 drop-shadow">{project.title}</div>
-                    <div className="flex gap-2">
-                      {project.tags.map((tag, i) => (
-                        <span key={i} className="bg-white/80 text-gray-800 text-xs font-medium px-2 py-1 rounded-md backdrop-blur-sm">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+              {/* Project Image */}
+              <div className="relative h-[300px] w-full overflow-hidden">
+                <Image
+                  src={project.coverImage.url}
+                  alt={project.Title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </div>
+
+              {/* Project Info */}
+              <div className="p-6">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-white">
+                    {project.category}
+                  </span>
+                  <span className="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-black">
+                    {project.type}
+                  </span>
                 </div>
-              </Link>
-            ))
-          )}
+                <h3 className="mb-2 text-2xl font-bold text-gray-900">{project.Title}</h3>
+                <p className="mb-4 text-gray-600 line-clamp-2">{project.description}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </main>

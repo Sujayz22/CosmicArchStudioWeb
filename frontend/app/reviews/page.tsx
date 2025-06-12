@@ -1,75 +1,38 @@
-import Image from "next/image";
+'use client';
 
-const reviewsData = [
-  {
-    type: "Personal Testimonial",
-    name: "Alice Johnson",
-    location: "Las Vegas",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "Cosmic Arch Studio took our ideas for a modern, minimalist design and turned them into something even better. The design, attention to detail, and communication was top-notch. We are so happy with how everything turned out, and the team was great to work with throughout the process.",
-    image: "/img(1).png",
-  },
-  {
-    type: "Google Review",
-    name: "Edward Stark",
-    location: "Las Vegas",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "Cosmic Arch Studio took our ideas for a modern, minimalist design and turned them into something even better. The design, attention to detail, and communication was top-notch. We are so happy with how everything turned out, and the team was great to work with throughout the process.",
-  },
-  {
-    type: "Personal Testimonial",
-    name: "Priya Sharma",
-    location: "Mumbai",
-    avatar: "/profilepic.jpg",
-    rating: 4,
-    text: "The team at Cosmic Arch Studio was very professional and creative. They listened to our needs and delivered a beautiful home. Highly recommended!",
-    image: "/img(2).png",
-  },
-  {
-    type: "Google Review",
-    name: "Michael Lee",
-    location: "Singapore",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "Excellent service and attention to detail. The project was completed on time and exceeded our expectations.",
-  },
-  {
-    type: "Personal Testimonial",
-    name: "Sara Kim",
-    location: "Seoul",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "We loved working with Cosmic Arch Studio. The design process was smooth and the results are stunning!",
-    image: "/img(3).png",
-  },
-  {
-    type: "Google Review",
-    name: "Carlos Mendez",
-    location: "Madrid",
-    avatar: "/profilepic.jpg",
-    rating: 4,
-    text: "Very happy with the outcome. The team was responsive and creative throughout the project.",
-  },
-  {
-    type: "Personal Testimonial",
-    name: "Alice Johnson",
-    location: "Las Vegas",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "Cosmic Arch Studio took our ideas for a modern, minimalist design and turned them into something even better. The design, attention to detail, and communication was top-notch. We are so happy with how everything turned out, and the team was great to work with throughout the process.",
-    image: "/img(1).png",
-  },
-  {
-    type: "Google Review",
-    name: "Edward Stark",
-    location: "Las Vegas",
-    avatar: "/profilepic.jpg",
-    rating: 5,
-    text: "Cosmic Arch Studio took our ideas for a modern, minimalist design and turned them into something even better. The design, attention to detail, and communication was top-notch. We are so happy with how everything turned out, and the team was great to work with throughout the process.",
-  },
-];
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { fetchAPI } from "@/lib/api";
+import { CgProfile } from "react-icons/cg";
+
+interface Review {
+  id: number;
+  name: string;
+  location: string;
+  type: string;
+  rating: number;
+  review: string;
+  profilepic: {
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      thumbnail: {
+        url: string;
+      };
+    };
+  } | null;
+  image: {
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      medium: {
+        url: string;
+      };
+    };
+  } | null;
+}
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -77,7 +40,7 @@ function StarRating({ rating }: { rating: number }) {
       {[...Array(5)].map((_, i) => (
         <svg
           key={i}
-          className={`w-4 h-4 ${i < rating ? "text-yellow-400" : "text-gray-300"}`}
+          className={`w-4 h-4 ${i < rating ? "text-secondary" : "text-gray-300"}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -89,11 +52,65 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function ReviewsPage() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetchAPI<{ data: Review[] }>('reviews?populate=*');
+        if (response.data) {
+          // Transform the data to match our interface
+          const transformedReviews = response.data.map(review => ({
+            id: review.id,
+            name: review.name,
+            location: review.location,
+            type: review.type,
+            rating: review.rating,
+            review: review.review,
+            profilepic: review.profilepic ? {
+              id: review.profilepic.id,
+              name: review.profilepic.name,
+              url: review.profilepic.formats?.thumbnail?.url || review.profilepic.url
+            } : null,
+            image: review.image ? {
+              id: review.image.id,
+              name: review.image.name,
+              url: review.image.formats?.medium?.url || review.image.url
+            } : null
+          }));
+          setReviews(transformedReviews);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
+        <div className="flex flex-col items-center mt-20 mb-14">
+          <span className="bg-secondary rounded-2xl px-10 py-2 mb-8">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-neutral-900 text-center inline-block">
+              Reviews<span className="text-neutral-900">.</span>
+            </h1>
+          </span>
+          <div className="text-lg">Loading reviews...</div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
       {/* Title */}
       <div className="flex flex-col items-center mt-20 mb-14">
-        <span className="bg-yellow-300 rounded-2xl px-10 py-2 mb-8">
+        <span className="bg-secondary rounded-2xl px-10 py-2 mb-8">
           <h1 className="text-5xl md:text-6xl font-extrabold text-neutral-900 text-center inline-block">
             Reviews<span className="text-neutral-900">.</span>
           </h1>
@@ -104,25 +121,31 @@ export default function ReviewsPage() {
       </div>
       {/* Reviews Grid */}
       <div className="columns-1 md:columns-2 gap-8 max-w-4xl w-full">
-        {reviewsData.map((review, idx) => (
-          <div key={idx} className="bg-white rounded-2xl shadow p-6 mb-8 break-inside-avoid">
+        {reviews.map((review) => (
+          <div key={review.id} className="bg-white rounded-2xl shadow p-6 mb-8 break-inside-avoid">
             {review.image && (
               <Image
-                src={review.image}
-                alt="Project"
+                src={review.image.url}
+                alt={`Project for ${review.name}'s review`}
                 width={400}
                 height={220}
                 className="rounded-xl w-full h-48 object-cover mb-4"
               />
             )}
             <div className={`flex items-center${review.image ? " mb-2" : ""}`}>
-              <Image
-                src={review.avatar}
-                alt={review.name}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
+              {review.profilepic?.url ? (
+                <Image
+                  src={review.profilepic.url}
+                  alt={`${review.name}'s profile picture`}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <CgProfile className="w-8 h-8 text-gray-500" />
+                </div>
+              )}
               <div className="ml-3 flex-1">
                 <div className="font-semibold">{review.name}</div>
                 <div className="text-xs text-gray-500">
@@ -132,7 +155,7 @@ export default function ReviewsPage() {
               </div>
               <StarRating rating={review.rating} />
             </div>
-            <p className="text-sm text-neutral-700">{review.text}</p>
+            <p className="text-sm text-neutral-700">{review.review}</p>
           </div>
         ))}
       </div>

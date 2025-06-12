@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import { Marquee } from '../components/magicui/marquee';
@@ -10,86 +10,15 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 import { FaHome, FaBath } from 'react-icons/fa';
 import { MdOutlineDesignServices } from "react-icons/md";
 import { GiWoodenChair } from "react-icons/gi";
-import { CgDesignmodo, CgWorkAlt } from "react-icons/cg";
+import { CgDesignmodo, CgWorkAlt, CgProfile } from "react-icons/cg";
 import { FaShop } from 'react-icons/fa6';
 import { RiLandscapeAiLine } from "react-icons/ri";
 import Link from 'next/link';
 import { NumberTicker } from '@/components/magicui/number-ticker';
-
-const images = [
-  'https://images.pexels.com/photos/3623785/pexels-photo-3623785.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  'https://images.pexels.com/photos/17240676/pexels-photo-17240676/free-photo-of-modern-design-of-kitchen.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  'https://images.pexels.com/photos/31837904/pexels-photo-31837904/free-photo-of-luxurious-modern-living-room-with-large-windows.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  'https://images.pexels.com/photos/18038083/pexels-photo-18038083/free-photo-of-sofa-and-armchairs-on-rug-in-living-room.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  'https://images.pexels.com/photos/13813464/pexels-photo-13813464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-];
-
-
-
-const projectCards = [
-  {
-    id: 1,
-    image: '/img(1).png',
-    title: "Modern kitchen transformation",
-    description:
-      "This kitchen transformation brought sleek, modern design and enhanced functionality to our client's home. We installed custom cabinetry, high-quality worktops, and state-of-the-art appliances, creating a stylish yet practical space perfect for cooking and entertaining. With attention to every detail, we delivered a kitchen that balances aesthetics and usability.",
-    testimonial:
-      "Cosmic Arch Studio completely transformed our kitchen, making it both beautiful and highly functional. The craftsmanship was outstanding, and the team was professional and communicative throughout. We couldn't be happier with the result.",
-    client: "Rachel Morgan",
-  },
-  {
-    id: 2,
-    image: '/img(2).png',
-    title: "External garden path build",
-    description:
-      "Our team designed and built a durable, visually appealing garden path to enhance the client's outdoor space. Using premium materials and careful craftsmanship, we achieved both beauty and value, transforming the garden into a more functional and aesthetic retreat.",
-    testimonial:
-      "The team at Cosmic Arch Studio did an amazing job on our garden path. It's sturdy, looks fantastic, and has completely transformed our outdoor space. They listened to our vision and delivered exactly what we wanted—highly recommended!",
-    client: "Michael Turner",
-  },
-  {
-    id: 3,
-    image: '/img(3).png',
-    title: "Contemporary living room makeover",
-    description:
-      "We revitalized this living room with a contemporary design, featuring custom shelving, modern lighting, and a harmonious color palette. The result is a welcoming space perfect for relaxation and entertaining guests.",
-    testimonial:
-      "The living room makeover exceeded our expectations. The new design is both stylish and comfortable, and the attention to detail was impressive. The team was a pleasure to work with from start to finish!",
-    client: "Samantha Lee",
-  },
-];
-
-const faqItems = [
-  {
-    question: "What area are you based in?",
-    answer:
-      "We primarily serve London and surrounding areas, but depending on the project, we may be able to travel further. Get in touch to discuss your location and project needs.",
-  },
-  {
-    question: "How long does a typical project take?",
-    answer: "",
-  },
-  {
-    question: "Do you offer free quotes?",
-    answer: "",
-  },
-  {
-    question: "Will I need planning permission for my project?",
-    answer: "",
-  },
-  {
-    question: "Do you provide a guarantee for your work?",
-    answer: "",
-  },
-  {
-    question: "Can I stay in my home while the work is being done?",
-    answer: "",
-  },
-  {
-    question: "How do I get started with a project?",
-    answer: "",
-  },
-];
+import { fetchAPI } from '@/lib/api';
+import type { Project } from '@/lib/api';
+import ScrollToTop from './components/ScrollToTop';
+import FAQ from './components/FAQ';
 
 const services = [
   {
@@ -125,9 +54,137 @@ const services = [
 ];
 
 export default function Home() {
+  const servicesRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  const [projectCards, setProjectCards] = useState<Project[]>([]);
+  const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
+  const [stats, setStats] = useState<{ number: number; title: string; description: string; symbol: boolean }[]>([]);
+  const [reviews, setReviews] = useState<{ name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[]>([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetchAPI<{ data: Project[] }>('projects?populate=*');
+        setProjectCards(response.data.slice(0, 3));
+      } catch (err) {
+        setProjectCards([]);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    const fetchMarquee = async () => {
+      try {
+        const response = await fetchAPI<{ data: { images: any[] } }>('marquee?populate=images');
+        if (response.data && response.data.images) {
+          setMarqueeImages(response.data.images.map((img: any) => img.url));
+        }
+      } catch (err) {
+        setMarqueeImages([]);
+      }
+    };
+    fetchMarquee();
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetchAPI<{ data: any[] }>('stats');
+        if (response.data && Array.isArray(response.data)) {
+          setStats(response.data.map((stat: any) => ({
+            number: stat.number,
+            title: stat.title,
+            description: stat.description ?? '',
+            symbol: stat.symbol ?? false
+          })));
+        } else if (response.data && typeof response.data === 'object') {
+          setStats([
+            {
+              number: (response.data as any).number,
+              title: (response.data as any).title,
+              description: (response.data as any).description,
+              symbol: (response.data as any).symbol ?? false
+            },
+          ]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+        setStats([]);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetchAPI<{ data: any[] }>('reviews?populate=*');
+        console.log('Reviews API Response:', response.data);
+        if (response.data) {
+          setReviews(response.data.map(review => ({
+            name: review.name,
+            type: review.type,
+            review: review.review,
+            rating: review.rating,
+            profilepic: review.profilepic ? {
+              url: review.profilepic.formats?.thumbnail?.url || review.profilepic.url
+            } : null
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+        setReviews([]);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  useEffect(() => {
+    
+    const scrollToServices = () => {
+    if (servicesRef.current) {
+      const offset = 80;
+      const top = servicesRef.current.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToCTA = () => {
+    if (ctaRef.current) {
+      const offset = 80;
+      const top = ctaRef.current.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    // Session-based scroll
+    if (sessionStorage.getItem('scrollToServices')) {
+      sessionStorage.removeItem('scrollToServices');
+      setTimeout(scrollToServices, 300);
+    }
+
+    if (sessionStorage.getItem('scrollToCTA')) {
+      sessionStorage.removeItem('scrollToCTA');
+      setTimeout(scrollToCTA, 300);
+    }
+
+    // Custom events
+    window.addEventListener('scrollToServices', scrollToServices);
+    window.addEventListener('scrollToCTA', scrollToCTA);
+
+    return () => {
+      window.removeEventListener('scrollToServices', scrollToServices);
+      window.removeEventListener('scrollToCTA', scrollToCTA);
+    };
+  }
+}, []);
 
   return (
     <main className="min-h-screen bg-dark">
+      <ScrollToTop />
       <Navbar />
       <div className="pt-20">
         <Hero />
@@ -138,10 +195,10 @@ export default function Home() {
               <span className="inline-block px-3 py-1 bg-secondary text-black rounded-full font-bold text-s mb-4">About us</span>
               <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">The Design <br />Alchemists</h1>
               <button className="flex items-center gap-4 py-3 rounded-full font-medium text-black group">
-                <span className="relative inline-block">
+                <Link href="/about" className="relative inline-block">
                   Know more
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                </span>
+                </Link>
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
                   <svg
                     width="18"
@@ -167,7 +224,7 @@ export default function Home() {
               repeat={2}
               pauseOnHover={false}
             >
-              {images.map((src, i) => (
+              {marqueeImages.map((src, i) => (
                 <div key={i} className="min-w-[280px] sm:min-w-[320px] h-[300px] sm:h-[400px] bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center shadow mx-2">
                   <img
                     src={src}
@@ -180,42 +237,24 @@ export default function Home() {
           </div>
 
           {/* Stats Section */}
-          <div className="w-full bg-neutral-100 rounded-2xl mt-16 py-14 px-2 flex flex-col items-center">
+          <div className="w-full bg-neutral-200 rounded-2xl mt-16 py-14 px-2 flex flex-col items-center">
             <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 justify-between text-center">
-              <div>
-                <span className="block text-5xl md:text-6xl font-light mb-3 font-sans">
-                  <NumberTicker value={500} startValue={0} className="text-5xl md:text-6xl font-sans" />+
-                </span>
-                <div className="font-semibold text-lg mb-1 ">Design hours invested</div>
-                <div className="text-base text-neutral-500">Dedicated to perfecting every detail</div>
-              </div>
-              <div>
-                <span className="block text-5xl md:text-6xl font-light mb-3 font-sans">
-                  <NumberTicker value={25} startValue={0} className="text-5xl md:text-6xl font-sans" />
-                </span>
-                <div className="font-semibold text-lg mb-1">Consultations delivered</div>
-                <div className="text-base text-neutral-500">Helping clients bring their vision to life</div>
-              </div>
-              <div>
-                <span className="block text-5xl md:text-6xl font-light mb-3 font-sans">
-                  <NumberTicker value={100} startValue={0} className="text-5xl md:text-6xl font-sans" />%
-                </span>
-                <div className="font-semibold text-lg mb-1">Locally sourced materials</div>
-                <div className="text-base text-neutral-500">Supporting our community and sustainability</div>
-              </div>
-              <div>
-                <span className="block text-5xl md:text-6xl font-light mb-3 font-sans">
-                  <NumberTicker value={100} startValue={0} className="text-5xl md:text-6xl font-sans" />%
-                </span>
-                <div className="font-semibold text-lg mb-1">Client satisfaction</div>
-                <div className="text-base text-neutral-500">All of our clients are satisfied with our work and service</div>
-              </div>
+              {stats.map((stat, idx) => (
+                <div key={idx}>
+                  <span className="block text-5xl md:text-6xl font-light mb-3 font-sans">
+                    <NumberTicker value={stat.number} startValue={0} className="text-5xl md:text-6xl font-sans" />
+                    {stat.symbol ? '%' : '+'}
+                  </span>
+                  <div className="font-semibold text-lg mb-1 ">{stat.title}</div>
+                  <div className="text-base text-neutral-500">{stat.description}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* What We Do Section */}
-        <section className="container-custom py-16">
+        <section ref={servicesRef} id="services-section" className="container-custom py-16">
           <div className="rounded-3xl bg-[#495f43] text-white p-10">
             <div className="flex flex-col items-center">
               <span className="inline-block px-3 py-1 bg-yellow-400 text-black rounded-full font-bold text-s mb-4">
@@ -246,10 +285,10 @@ export default function Home() {
                 );
               })}
             </div>
-            <div className="flex justify-center mt-12">
-              <button className="flex items-center gap-4 py-3 rounded-full font-semibold text-white group">
+            <div ref={ctaRef}  className="flex justify-center mt-12">
+              <Link href="/contact" className="flex items-center gap-4 py-3 rounded-full font-semibold text-white group scroll-smooth">
                 <span className="relative inline-block text-xl">
-                Enquire Now
+                  Enquire Now
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                 </span>
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary group-hover:bg-secondary/80 transition-colors">
@@ -263,7 +302,7 @@ export default function Home() {
                     <path d="M7 13L13 7M13 7H7M13 7V13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </span>
-              </button>
+              </Link>
             </div>
           </div>
         </section>
@@ -282,31 +321,29 @@ export default function Home() {
           <div className="relative" style={{ height: `${projectCards.length * 100}vh` }}>
             {projectCards.map((card, idx) => (
               <div
-                key={card.id}
+                key={card.slug}
                 className="sticky top-0 flex justify-center items-center transition-all duration-500"
                 style={{ zIndex: idx + 1, height: '100vh' }}
               >
                 <Link
-                  href={`/projects/${card.id}`}
-                  aria-label={`View project: ${card.title}`}
+                  href={`/projects/${card.slug}`}
+                  aria-label={`View project: ${card.Title}`}
                   className="group w-full max-w-5xl flex justify-center items-center cursor-view-project"
                 >
                   <div
                     className={`relative rounded-3xl shadow-lg w-full max-w-5xl h-[60vh] flex flex-col md:flex-row gap-16 items-center justify-center p-10 ${idx % 2 === 0 ? 'bg-primary text-white' : 'bg-secondary text-black'} cursor-pointer transition-transform duration-200`}
                   >
-                    <Image src={card.image} alt={card.title} width={400} height={400} className="rounded-2xl object-cover w-[400px] h-[400px]" />
+                    <Image src={card.coverImage.url} alt={card.client} width={400} height={400} className="rounded-2xl object-cover w-[400px] h-[400px]" />
                     <div className="flex-1 flex flex-col gap-4 justify-center">
-                      <h3 className={`text-3xl font-bold mb-2 ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.title}</h3>
-                      <p className={`mb-2 text-base md:text-lg ${idx % 2 === 0 ? 'text-white/90' : 'text-black/80'}`}>{card.description}</p>
+                      <h3 className={`text-3xl font-bold mb-2 ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.Title}</h3>
+                      <p className={`mb-2 text-base md:text-lg ${idx % 2 === 0 ? 'text-white/90' : 'text-black/80'}`}>{card.description.split(' ').slice(0, 30).join(' ')}...</p>
                       <div className="flex gap-2 mb-2">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>Kitchen</span>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>4 weeks</span>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.category}</span>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.type}</span>
                       </div>
-                      <blockquote className={`italic border-l-4 pl-4 mb-2 ${idx % 2 === 0 ? 'text-white/80 border-white/50' : 'text-black/70 border-black/30'}`}>
-                        {card.testimonial}
-                      </blockquote>
+                      <blockquote className={`italic border-l-4 pl-4 mb-2 ${idx % 2 === 0 ? 'text-white/80 border-white/50' : 'text-black/70 border-black/30'}`}>{card.review}</blockquote>
                       <div className="flex items-center gap-3 mt-2">
-                        <Image src={card.image} alt={card.client} width={32} height={32} className={`rounded-full object-cover border-2 ${idx % 2 === 0 ? 'border-white' : 'border-black'}`} />
+                        <Image src={card.coverImage.url} alt={card.client} width={32} height={32} className={`rounded-full object-cover border-2 ${idx % 2 === 0 ? 'border-white' : 'border-black'} aspect-square`} />
                         <span className={`font-semibold text-sm ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.client}</span>
                       </div>
                     </div>
@@ -316,23 +353,19 @@ export default function Home() {
             ))}
           </div>
           <div className="flex justify-center">
-            <button className="flex items-center gap-4 py-3 rounded-full font-semibold text-black group">
-              <span className="relative inline-block text-xl">
-                View all Projects
-                <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-              </span>
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary group-hover:bg-secondary/80 transition-colors">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  className="transition-transform duration-300 group-hover:rotate-45"
-                >
-                  <path d="M7 13L13 7M13 7H7M13 7V13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            </button>
+            <Link href="/projects" passHref legacyBehavior>
+              <a className="flex items-center gap-4 py-3 rounded-full font-semibold text-black group">
+                <span className="relative inline-block text-xl">
+                  View all Projects
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+                </span>
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary group-hover:bg-secondary/80 transition-colors">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="transition-transform duration-300 group-hover:rotate-45">
+                    <path d="M7 13L13 7M13 7H7M13 7V13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+              </a>
+            </Link>
           </div>
         </section>
 
@@ -352,48 +385,42 @@ export default function Home() {
               pauseOnHover={true}
               fullWidth={true}
             >
-              {[1,2,3,4,5,6,7,8].map((i) => (
+              {reviews.map((review, i) => (
                 <div
                   key={i}
                   className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
                 >
                   <div>
                     <div className="flex items-center mb-3">
-                      {[...Array(5)].map((_, idx) => (
+                      {[...Array(review.rating)].map((_, idx) => (
                         <svg key={idx} className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                       ))}
                     </div>
                     <p className="text-base text-gray-800 mb-4 line-clamp-4">
-                      {[
-                        "Excellent service from start to finish. The team was professional, communicative, and the results exceeded my expectations. My new room looks amazing!",
-                        "I couldn't be happier with my loft conversion. The attention to detail and quality of work were outstanding. Cosmic Arch Studio made the whole process smooth and stress-free!",
-                        "Cosmic Arch Studio transformed our outdoor space with a beautiful garden path. The work was completed on time, and the finish is excellent. A great team to work with!",
-                        "From the first consultation to the final touches, Cosmic Arch Studio delivered on every promise. Our home extension is exactly what we wanted—spacious, modern, and beautifully finished!",
-                        "Cosmic Arch Studio did an incredible job on our kitchen. The craftsmanship was top-notch, and the team was professional from start to finish. Highly recommend!",
-                        "Fantastic workmanship! The team renovated our bathroom with precision and care. It now feels like a luxury space. Would definitely use Cosmic Arch Studio again.",
-                        "Cosmic Arch Studio transformed our old garage into a modern workspace. The process was seamless and the results are fantastic!",
-                        "Great experience working with Cosmic Arch Studio. The team was attentive, skilled, and delivered high-quality results on time."
-                      ][i-1]}
+                      {review.review}
                     </p>
                   </div>
                   <div className="flex items-center mt-auto pt-4 border-t border-gray-200">
-                    <img src={`https://randomuser.me/api/portraits/${i%2===0?'women':'men'}/${10+i}.jpg`} alt="avatar" className="w-12 h-12 rounded-full object-cover border-2 border-white mr-4" />
+                    {review.profilepic ? (
+                      <Image
+                        src={review.profilepic.url}
+                        alt={`${review.name}'s profile`}
+                        width={48}
+                        height={48}
+                        className="rounded-full object-cover border-2 border-white mr-4"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                        <CgProfile className="w-8 h-8 text-gray-500" />
+                      </div>
+                    )}
                     <div className="flex flex-col">
                       <span className="font-semibold text-sm text-gray-900">
-                        {[
-                          "James Richardson",
-                          "Sophie Williams",
-                          "Daniel Foster",
-                          "Charlotte Harris",
-                          "Emily Carter",
-                          "Oliver Bennett",
-                          "Charlotte Harris",
-                          "Daniel Foster"
-                        ][i-1]}
+                        {review.name}
                       </span>
-                      <span className="text-xs text-gray-500">Verified Client</span>
+                      <span className="text-xs text-gray-500">{review.type}</span>
                     </div>
                   </div>
                 </div>
@@ -408,48 +435,42 @@ export default function Home() {
               reverse={true}
               fullWidth={true}
             >
-              {[5,6,7,8,1,2,3,4].map((i) => (
+              {[...reviews].reverse().map((review, i) => (
                 <div
                   key={i}
                   className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
                 >
                   <div>
                     <div className="flex items-center mb-3">
-                      {[...Array(5)].map((_, idx) => (
+                      {[...Array(review.rating)].map((_, idx) => (
                         <svg key={idx} className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                       ))}
                     </div>
                     <p className="text-base text-gray-800 mb-4 line-clamp-4">
-                      {[
-                        "Excellent service from start to finish. The team was professional, communicative, and the results exceeded my expectations. My new room looks amazing!",
-                        "I couldn't be happier with my loft conversion. The attention to detail and quality of work were outstanding. Cosmic Arch Studio made the whole process smooth and stress-free!",
-                        "Cosmic Arch Studio transformed our outdoor space with a beautiful garden path. The work was completed on time, and the finish is excellent. A great team to work with!",
-                        "From the first consultation to the final touches, Cosmic Arch Studio delivered on every promise. Our home extension is exactly what we wanted—spacious, modern, and beautifully finished!",
-                        "Cosmic Arch Studio did an incredible job on our kitchen. The craftsmanship was top-notch, and the team was professional from start to finish. Highly recommend!",
-                        "Fantastic workmanship! The team renovated our bathroom with precision and care. It now feels like a luxury space. Would definitely use Cosmic Arch Studio again.",
-                        "Cosmic Arch Studio transformed our old garage into a modern workspace. The process was seamless and the results are fantastic!",
-                        "Great experience working with Cosmic Arch Studio. The team was attentive, skilled, and delivered high-quality results on time."
-                      ][i-1]}
+                      {review.review}
                     </p>
                   </div>
                   <div className="flex items-center mt-auto pt-4 border-t border-gray-200">
-                    <img src={`https://randomuser.me/api/portraits/${i%2===0?'women':'men'}/${10+i}.jpg`} alt="avatar" className="w-12 h-12 rounded-full object-cover border-2 border-white mr-4" />
+                    {review.profilepic ? (
+                      <Image
+                        src={review.profilepic.url}
+                        alt={`${review.name}'s profile`}
+                        width={48}
+                        height={48}
+                        className="rounded-full object-cover border-2 border-white mr-4"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                        <CgProfile className="w-8 h-8 text-gray-500" />
+                      </div>
+                    )}
                     <div className="flex flex-col">
                       <span className="font-semibold text-sm text-gray-900">
-                        {[
-                          "James Richardson",
-                          "Sophie Williams",
-                          "Daniel Foster",
-                          "Charlotte Harris",
-                          "Emily Carter",
-                          "Oliver Bennett",
-                          "Charlotte Harris",
-                          "Daniel Foster"
-                        ][i-1]}
+                        {review.name}
                       </span>
-                      <span className="text-xs text-gray-500">Verified Client</span>
+                      <span className="text-xs text-gray-500">{review.type}</span>
                     </div>
                   </div>
                 </div>
@@ -458,58 +479,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="container-custom py-16">
-          <div className="bg-[#566c54] rounded-[3rem] p-0 md:p-0 flex flex-col md:flex-row items-stretch overflow-hidden">
-            {/* Left Column */}
-            <div className="flex-1 flex flex-col justify-center px-8 py-12 md:py-24 md:pl-16 md:pr-8 text-white">
-            <div className="mb-6 inline-flex items-center">
-                <div className="bg-[#FFD740] h-10 rounded-full px-6 flex items-center">
-                  <span className="font-bold text-black text-lg">FAQs</span>
-                </div>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">Answering your questions</h2>
-              <p className="mb-8 text-lg text-white/80 max-w-md">Got more questions? Send us your enquiry below</p>
-              <button className="flex items-center gap-3 bg-yellow-400 text-black font-semibold px-7 py-3 rounded-full text-lg w-fit shadow hover:bg-yellow-300 transition group">
-                Get in touch
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary group-hover:bg-primary/80 transition-colors">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="transition-transform duration-300 group-hover:rotate-45"
-                  >
-                    <path d="M7 13L13 7M13 7H7M13 7V13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </button>
-            </div>
-            {/* Right Column: Accordion */}
-            <div className="flex-1 flex items-center justify-center bg-transparent px-4 md:px-12 py-12">
-              <Accordion type="single" collapsible className="w-full max-w-xl space-y-4" defaultValue="0">
-                {faqItems.map((item, i) => (
-                  <AccordionItem key={i} value={i.toString()} className="rounded-2xl bg-white/90 shadow border-none overflow-hidden transition-all">
-                    <AccordionTrigger className="flex items-center justify-between w-full px-6 py-5 text-lg md:text-xl font-semibold text-[#222] hover:no-underline group transition-all">
-                      <span className="text-left flex-1">{item.question}</span>
-                      <span
-                        className="ml-4 flex items-center justify-center w-8 h-8 rounded-full bg-[#e6e9e3] text-[#495f43] text-2xl transition-transform duration-300 group-data-[state=open]:rotate-45"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M10 4V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                          <path d="M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-6 pb-6 pt-2 text-base text-[#495f43] bg-[#f7f8f6] transition-all">
-                      {item.answer ? item.answer : <span className="italic text-[#8a9a87]">Please contact us for more details.</span>}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          </div>
-        </section>
+        <FAQ />
       </div>
     </main>
   );
