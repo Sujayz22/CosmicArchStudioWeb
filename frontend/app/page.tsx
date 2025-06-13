@@ -194,11 +194,11 @@ export default function Home() {
             <div className="flex-1">
               <span className="inline-block px-3 py-1 bg-secondary text-black rounded-full font-bold text-s mb-4">About us</span>
               <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">The Design <br />Alchemists</h1>
-              <button className="flex items-center gap-4 py-3 rounded-full font-medium text-black group">
-                <Link href="/about" className="relative inline-block">
+              <Link href="/about" className="relative inline-block">
+               <button className="flex items-center gap-4 py-3 rounded-full font-medium text-black group">
                   Know more
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                </Link>
+                
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
                   <svg
                     width="18"
@@ -210,7 +210,7 @@ export default function Home() {
                     <path d="M7 13L13 7M13 7H7M13 7V13" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </span>
-              </button>
+              </button></Link>
            </div>
             <div className="flex-2 md:pl-12">
               <p className="text-lg bg-primary p-4 rounded-lg text-white max-w-2xl md:mt-8">

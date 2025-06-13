@@ -1,0 +1,65 @@
+import qs from 'qs';
+
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
+
+export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
+  try {
+    const queryString = qs.stringify(urlParamsObject, {
+      encodeValuesOnly: true
+    });
+    const requestUrl = `${STRAPI_URL}/api${path}${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('Fetching from:', requestUrl);
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add API token for content-type-builder endpoints
+    if (path.startsWith('/content-type-builder') && STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(requestUrl, { headers });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('Strapi error response:', errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Strapi response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching from Strapi:', error);
+    throw error;
+  }
+}
+
+export async function postToStrapi(path: string, data: any) {
+  try {
+    const requestUrl = `${STRAPI_URL}/api${path}`;
+    
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: data
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('Error posting to Strapi:', error);
+    throw error;
+  }
+} 

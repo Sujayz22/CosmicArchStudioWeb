@@ -6,7 +6,8 @@ import { FaInstagram, FaLinkedin, FaXTwitter, FaEnvelope, FaPhone, FaLocationDot
 import { AnimatedSubscribeButton } from '@/components/magicui/animated-subscribe-button';
 import { useInView } from 'react-intersection-observer';
 import { ChevronRight, Check } from 'lucide-react';
-import { fetchAPI } from '@/lib/api';
+import { fetchFromStrapi, postToStrapi } from '../utils/strapi';
+import Newsletter from './Newsletter';
 
 interface ContactData {
   data: {
@@ -30,15 +31,6 @@ interface ContactData {
   }
 }
 
-const projectTypes = [
-  "Residential Design",
-  "Commercial Design",
-  "Interior Design",
-  "Renovation",
-  "Space Planning",
-  "Landscape Design"
-] as const;
-
 const CTA = () => {
   const [ref, inView] = useInView({
     threshold: 0.1,
@@ -50,23 +42,24 @@ const CTA = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchContactData = async () => {
+    const fetchData = async () => {
       try {
-        const data = await fetchAPI<ContactData>('contact');
-        console.log('Raw API response:', data);
-        if (!data || !data.data) {
-          throw new Error('Invalid data structure received from API');
+        const contactResponse = await fetchFromStrapi('/contact');
+
+        if (!contactResponse || !contactResponse.data) {
+          throw new Error('Invalid contact data structure received from API');
         }
-        setContactData(data);
+
+        setContactData(contactResponse);
       } catch (error) {
-        console.error('Error fetching contact data:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch contact data');
+        console.error('Error fetching data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchContactData();
+    fetchData();
   }, []);
 
   const [formData, setFormData] = useState({
@@ -82,11 +75,30 @@ const CTA = () => {
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [formError, setFormError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // No validation, just log or send the data
-    console.log(formData);
-    setTimeout(() => {
+    setFormStatus('loading');
+    setFormError('');
+
+    try {
+      await postToStrapi('/clientforms', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        projectType: formData.projectType,
+        location: formData.location,
+        budget: formData.budget,
+        projectSize: formData.projectSize,
+        startDate: formData.startDate,
+        completionDate: formData.completionDate,
+        message: formData.message
+      });
+
+      setFormStatus('success');
+      // Reset form after successful submission
       setFormData({
         name: '',
         email: '',
@@ -99,7 +111,11 @@ const CTA = () => {
         completionDate: '',
         message: ''
       });
-    }, 2000);
+    } catch (error) {
+      setFormStatus('error');
+      setFormError('Failed to submit form. Please try again.');
+      console.error('Form submission error:', error);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -249,24 +265,7 @@ const CTA = () => {
 
                 {/* Newsletter Section */}
                 <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
-                  <h3 className="text-sm uppercase tracking-wider text-light/60 text-center mb-4">Sign up to our newsletter</h3>
-                  <div className="relative">
-                    <input 
-                      type="email" 
-                      placeholder="Enter your email address"
-                      className="w-full bg-transparent border-b border-neutral-800 py-2 text-black placeholder:text-neutral-600 focus:outline-none focus:border-black transition-colors"
-                    />
-                    <AnimatedSubscribeButton className="w-full mt-4">
-                      <span className="group inline-flex items-center justify-center w-full">
-                        Subscribe
-                        <ChevronRight className="ml-1 size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      </span>
-                      <span className="group inline-flex items-center justify-center w-full">
-                        <Check className="mr-2 size-4" />
-                        Subscribed
-                      </span>
-                    </AnimatedSubscribeButton>
-                  </div>
+                  <Newsletter />
                 </div>
               </div>
             </div>
@@ -334,9 +333,10 @@ const CTA = () => {
                     required
                   >
                     <option value="" className="text-neutral-400">Select...</option>
-                    {projectTypes.map((type) => (
-                      <option key={type} value={type} className="text-neutral-800">{type}</option>
-                    ))}
+                    <option value="residential" className="text-neutral-800">Residential</option>
+                    <option value="commercial" className="text-neutral-800">Commercial</option>
+                    <option value="industrial" className="text-neutral-800">Industrial</option>
+                    <option value="renovation" className="text-neutral-800">Renovation</option>
                   </select>
                 </div>
 
@@ -425,14 +425,21 @@ const CTA = () => {
                   />
                 </div>
 
-                <AnimatedSubscribeButton className="w-full text-black" showConfetti={true}>
+                <AnimatedSubscribeButton 
+                  className="w-full text-black" 
+                  showConfetti={formStatus === 'success'}
+                  disabled={formStatus === 'loading'}
+                >
                   <span className="group inline-flex items-center justify-center">
-                    Request Free Estimate
+                    {formStatus === 'loading' ? 'Submitting...' : 'Request Free Estimate'}
                   </span>
                   <span className="group inline-flex items-center justify-center">
-                    Request Sent!
+                    {formStatus === 'success' ? 'Request Sent!' : 'Request Free Estimate'}
                   </span>
                 </AnimatedSubscribeButton>
+                {formError && (
+                  <p className="text-red-500 text-sm mt-2 text-center">{formError}</p>
+                )}
               </form>
             </div>
           </div>

@@ -1,14 +1,66 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import Link from 'next/link';
+import { fetchFromStrapi } from '../utils/strapi';
 
+interface HeroData {
+  data: {
+    description: string;
+    heroImage: {
+      id: number;
+      name: string;
+      alternativeText: string | null;
+      url: string;
+    };
+    imageText: string;
+  }
+}
 
 const Hero = () => {
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchFromStrapi('/herosection', {
+          populate: ['heroImage']
+        }) as HeroData;
+        setHeroData(data);
+      } catch (error) {
+        console.error('Error fetching hero data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading || !heroData) {
+    return (
+      <section className="min-h-screen bg-neutral-light relative">
+        <div className="container-custom pt-16 pb-12 sm:pt-25">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6 md:space-y-8">
+              <div className="h-12 bg-gray-200 rounded animate-pulse" />
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-1/3" />
+              <div className="h-24 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="h-[500px] md:h-[600px] lg:h-[700px] bg-gray-200 rounded-2xl animate-pulse" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const { description, heroImage, imageText } = heroData.data;
+
   return (
     <section className="min-h-screen bg-neutral-light relative">
       <div className="container-custom pt-16 pb-12 sm:pt-25">
@@ -34,19 +86,19 @@ const Hero = () => {
               transition={{ duration: 0.6, delay: 0.8 }}
               className="text-base md:text-2xl text-neutral/80 max-w-xl"
             >
-              Cosmic Arch Studio delivers expert improvements, creating beautiful and functional spaces with quality craftsmanship.
+              {description}
             </motion.p>
             
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.9}}
-            >
+            ><Link href="/contact">
               <InteractiveHoverButton
                 className="mt-6 px-6 py-3 text-lg"
               >
-                <Link href="/contact">Book a consultation</Link>
-              </InteractiveHoverButton>
+                Book a consultation
+              </InteractiveHoverButton></Link>
             </motion.div>
            
           </div>
@@ -59,8 +111,8 @@ const Hero = () => {
             className="relative h-[500px] md:h-[600px] lg:h-[700px] rounded-2xl overflow-hidden"
           >
             <Image
-              src="/hero-image.png"
-              alt="Modern kitchen interior with dark walls and wooden elements"
+              src={`${heroImage.url}`}
+              alt={heroImage.alternativeText || 'Hero image'}
               fill
               className="object-cover"
               priority
@@ -73,9 +125,8 @@ const Hero = () => {
               transition={{ duration: 0.9,}}
               className="absolute bottom-6 right-6 bg-white/50 backdrop-blur-sm p-4 md:p-6 rounded-xl max-w-xs shadow-lg"
             >
-             
               <p className="text-sm md:text-base text-gray-900">
-              Cosmic Arch Studio is where your architectural dreams find their foundation. We blend visionary design with meticulous execution to bring extraordinary spaces to life.
+                {imageText}
               </p>
             </motion.div>
           </motion.div>
