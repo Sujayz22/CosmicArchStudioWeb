@@ -25,8 +25,13 @@ export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('Strapi error response:', errorData);
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error('Strapi error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: requestUrl,
+        error: errorData
+      });
+      throw new Error(`HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`);
     }
     
     const data = await response.json();
@@ -62,7 +67,12 @@ export async function postToStrapi(path: string, data: any) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('Strapi error response:', errorData);
+      console.error('Strapi error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: requestUrl,
+        error: errorData
+      });
       throw new Error(`HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`);
     }
 

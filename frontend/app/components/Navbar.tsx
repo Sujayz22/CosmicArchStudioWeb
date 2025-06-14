@@ -29,12 +29,12 @@ const Navbar = () => {
         ease: "easeInOut"
       }
     }
-  };
+  } as const;
 
   const menuButtonVariants = {
     closed: { rotate: 0 },
     open: { rotate: 45 }
-  };
+  } as const;
 
   const dropdownVariants = {
     hidden: {
@@ -53,7 +53,7 @@ const Navbar = () => {
         ease: "easeInOut"
       }
     }
-  };
+  } as const;
 
   const mobileDropdownVariants = {
     hidden: {
@@ -72,18 +72,13 @@ const Navbar = () => {
         opacity: { duration: 0.2, delay: 0.1 }
       }
     }
-  };
+  } as const;
 
 
 
   const handleServicesClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (pathname === '/') {
-      window.dispatchEvent(new CustomEvent('scrollToServices'));
-    } else {
-      sessionStorage.setItem('scrollToServices', 'true');
-      router.push('/');
-    }
+    router.push('/services');
   };
 
   return (

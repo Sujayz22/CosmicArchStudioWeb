@@ -53,6 +53,14 @@ const services = [
   },
 ];
 
+// Add new interface for consolidated data
+interface HomePageData {
+  projects: Project[];
+  marqueeImages: string[];
+  stats: { number: number; title: string; description: string; symbol: boolean }[];
+  reviews: { name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[];
+}
+
 export default function Home() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -61,69 +69,49 @@ export default function Home() {
   const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
   const [stats, setStats] = useState<{ number: number; title: string; description: string; symbol: boolean }[]>([]);
   const [reviews, setReviews] = useState<{ name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Single useEffect for data fetching
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchAllData = async () => {
       try {
-        const response = await fetchAPI<{ data: Project[] }>('projects?populate=*');
-        setProjectCards(response.data.slice(0, 3));
-      } catch (err) {
-        setProjectCards([]);
-      }
-    };
-    fetchProjects();
-  }, []);
+        setLoading(true);
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse] = await Promise.all([
+          fetchAPI<{ data: Project[] }>('projects?populate=*'),
+          fetchAPI<{ data: { images: any[] } }>('marquee?populate=images'),
+          fetchAPI<{ data: any[] }>('stats'),
+          fetchAPI<{ data: any[] }>('reviews?populate=*')
+        ]);
 
-  useEffect(() => {
-    const fetchMarquee = async () => {
-      try {
-        const response = await fetchAPI<{ data: { images: any[] } }>('marquee?populate=images');
-        if (response.data && response.data.images) {
-          setMarqueeImages(response.data.images.map((img: any) => img.url));
+        if (projectsResponse.data) {
+          setProjectCards(projectsResponse.data.slice(0, 3));
         }
-      } catch (err) {
-        setMarqueeImages([]);
-      }
-    };
-    fetchMarquee();
-  }, []);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetchAPI<{ data: any[] }>('stats');
-        if (response.data && Array.isArray(response.data)) {
-          setStats(response.data.map((stat: any) => ({
-            number: stat.number,
-            title: stat.title,
-            description: stat.description ?? '',
-            symbol: stat.symbol ?? false
-          })));
-        } else if (response.data && typeof response.data === 'object') {
-          setStats([
-            {
-              number: (response.data as any).number,
-              title: (response.data as any).title,
-              description: (response.data as any).description,
-              symbol: (response.data as any).symbol ?? false
-            },
-          ]);
+        if (marqueeResponse.data && marqueeResponse.data.images) {
+          setMarqueeImages(marqueeResponse.data.images.map((img: any) => img.url));
         }
-      } catch (err) {
-        console.error('Failed to fetch stats:', err);
-        setStats([]);
-      }
-    };
-    fetchStats();
-  }, []);
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await fetchAPI<{ data: any[] }>('reviews?populate=*');
-        console.log('Reviews API Response:', response.data);
-        if (response.data) {
-          setReviews(response.data.map(review => ({
+        if (statsResponse.data) {
+          const processedStats = Array.isArray(statsResponse.data) 
+            ? statsResponse.data.map((stat: any) => ({
+                number: stat.number,
+                title: stat.title,
+                description: stat.description ?? '',
+                symbol: stat.symbol ?? false
+              }))
+            : [{
+                number: (statsResponse.data as any).number,
+                title: (statsResponse.data as any).title,
+                description: (statsResponse.data as any).description,
+                symbol: (statsResponse.data as any).symbol ?? false
+              }];
+          setStats(processedStats);
+        }
+
+        if (reviewsResponse.data) {
+          setReviews(reviewsResponse.data.map(review => ({
             name: review.name,
             type: review.type,
             review: review.review,
@@ -134,53 +122,81 @@ export default function Home() {
           })));
         }
       } catch (err) {
-        console.error('Failed to fetch reviews:', err);
-        setReviews([]);
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
-    fetchReviews();
+
+    fetchAllData();
   }, []);
 
+  // Single useEffect for scroll handling
   useEffect(() => {
-    
-    const scrollToServices = () => {
-    if (servicesRef.current) {
-      const offset = 80;
-      const top = servicesRef.current.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
-  };
-
-  const scrollToCTA = () => {
-    if (ctaRef.current) {
-      const offset = 80;
-      const top = ctaRef.current.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
-  };
-
-  if (typeof window !== 'undefined') {
-    // Session-based scroll
-    if (sessionStorage.getItem('scrollToServices')) {
-      sessionStorage.removeItem('scrollToServices');
-      setTimeout(scrollToServices, 300);
-    }
-
-    if (sessionStorage.getItem('scrollToCTA')) {
-      sessionStorage.removeItem('scrollToCTA');
-      setTimeout(scrollToCTA, 300);
-    }
-
-    // Custom events
-    window.addEventListener('scrollToServices', scrollToServices);
-    window.addEventListener('scrollToCTA', scrollToCTA);
-
-    return () => {
-      window.removeEventListener('scrollToServices', scrollToServices);
-      window.removeEventListener('scrollToCTA', scrollToCTA);
+    const handleScroll = () => {
+      if (servicesRef.current) {
+        const offset = 80;
+        const top = servicesRef.current.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
     };
+
+    const handleCTAScroll = () => {
+      if (ctaRef.current) {
+        const offset = 80;
+        const top = ctaRef.current.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    };
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // Initial check
+    handleResize();
+
+    // Session-based scroll
+    if (typeof window !== 'undefined') {
+      if (sessionStorage.getItem('scrollToServices')) {
+        sessionStorage.removeItem('scrollToServices');
+        setTimeout(handleScroll, 300);
+      }
+
+      if (sessionStorage.getItem('scrollToCTA')) {
+        sessionStorage.removeItem('scrollToCTA');
+        setTimeout(handleCTAScroll, 300);
+      }
+
+      // Event listeners
+      window.addEventListener('scrollToServices', handleScroll);
+      window.addEventListener('scrollToCTA', handleCTAScroll);
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('scrollToServices', handleScroll);
+        window.removeEventListener('scrollToCTA', handleCTAScroll);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
-}, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-dark">
@@ -286,9 +302,9 @@ export default function Home() {
               })}
             </div>
             <div ref={ctaRef}  className="flex justify-center mt-12">
-              <Link href="/contact" className="flex items-center gap-4 py-3 rounded-full font-semibold text-white group scroll-smooth">
+              <Link href="/services" className="flex items-center gap-4 py-3 rounded-full font-semibold text-white group scroll-smooth">
                 <span className="relative inline-block text-xl">
-                  Enquire Now
+                  View all services
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                 </span>
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary group-hover:bg-secondary/80 transition-colors">
