@@ -42,21 +42,32 @@ export async function postToStrapi(path: string, data: any) {
   try {
     const requestUrl = `${STRAPI_URL}/api${path}`;
     
+    console.log('Posting to:', requestUrl);
+    console.log('With data:', data);
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add API token if available
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+    
     const response = await fetch(requestUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: data
-      }),
+      headers,
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => null);
+      console.error('Strapi error response:', errorData);
+      throw new Error(`HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`);
     }
 
     const responseData = await response.json();
+    console.log('Strapi response:', responseData);
     return responseData;
   } catch (error) {
     console.error('Error posting to Strapi:', error);

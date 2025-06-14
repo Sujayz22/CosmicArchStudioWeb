@@ -114,6 +114,7 @@ const Hero = () => {
               src={`${heroImage.url}`}
               alt={heroImage.alternativeText || 'Hero image'}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 100vw"
               className="object-cover"
               priority
             />

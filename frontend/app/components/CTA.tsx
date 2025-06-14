@@ -8,6 +8,7 @@ import { useInView } from 'react-intersection-observer';
 import { ChevronRight, Check } from 'lucide-react';
 import { fetchFromStrapi, postToStrapi } from '../utils/strapi';
 import Newsletter from './Newsletter';
+import { getClientFormSchema } from '../actions/getClientFormSchema';
 
 interface ContactData {
   data: {
@@ -40,17 +41,22 @@ const CTA = () => {
   const [contactData, setContactData] = useState<ContactData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [projectTypes, setProjectTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const contactResponse = await fetchFromStrapi('/contact');
+        const [contactResponse, schemaResponse] = await Promise.all([
+          fetchFromStrapi('/contact'),
+          getClientFormSchema()
+        ]);
 
         if (!contactResponse || !contactResponse.data) {
           throw new Error('Invalid contact data structure received from API');
         }
 
         setContactData(contactResponse);
+        setProjectTypes(schemaResponse.type);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch data');
@@ -84,18 +90,37 @@ const CTA = () => {
     setFormError('');
 
     try {
-      await postToStrapi('/clientforms', {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        projectType: formData.projectType,
-        location: formData.location,
-        budget: formData.budget,
-        projectSize: formData.projectSize,
-        startDate: formData.startDate,
-        completionDate: formData.completionDate,
-        message: formData.message
-      });
+      // Validate phone number
+      const phoneNumber = parseInt(formData.phone);
+      if (isNaN(phoneNumber)) {
+        throw new Error('Please enter a valid phone number');
+      }
+
+      // Validate project size
+      const projectSize = parseInt(formData.projectSize);
+      if (isNaN(projectSize)) {
+        throw new Error('Please enter a valid project size');
+      }
+
+      const formPayload = {
+        data: {
+          name: formData.name,
+          email: formData.email,
+          phone: phoneNumber,
+          type: formData.projectType,
+          location: formData.location,
+          budget: formData.budget,
+          size: projectSize,
+          startDate: formData.startDate || null,
+          completionDate: formData.completionDate || null,
+          Message: formData.message
+        }
+      };
+
+      console.log('Submitting form with payload:', formPayload);
+      
+      const response = await postToStrapi('/clientforms', formPayload);
+      console.log('Form submission response:', response);
 
       setFormStatus('success');
       // Reset form after successful submission
@@ -113,8 +138,8 @@ const CTA = () => {
       });
     } catch (error) {
       setFormStatus('error');
-      setFormError('Failed to submit form. Please try again.');
-      console.error('Form submission error:', error);
+      console.error('Form submission error details:', error);
+      setFormError(error instanceof Error ? error.message : 'Failed to submit form. Please try again.');
     }
   };
 
@@ -332,11 +357,12 @@ const CTA = () => {
                     className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800"
                     required
                   >
-                    <option value="" className="text-neutral-400">Select...</option>
-                    <option value="residential" className="text-neutral-800">Residential</option>
-                    <option value="commercial" className="text-neutral-800">Commercial</option>
-                    <option value="industrial" className="text-neutral-800">Industrial</option>
-                    <option value="renovation" className="text-neutral-800">Renovation</option>
+                    <option value="">Select a project type</option>
+                      {projectTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -422,6 +448,7 @@ const CTA = () => {
                     onChange={(e) => handleInputChange('message', e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 min-h-[120px] mb-6"
                     placeholder="Write your message here"
+                    required
                   />
                 </div>
 
