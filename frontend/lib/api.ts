@@ -1,4 +1,19 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://calm-addition-271c24a97d.strapiapp.com';
+
+// Get the frontend host (the domain making the request)
+const getFrontendHost = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.host;
+  }
+  // Fallback for server-side rendering
+  return 'cosmic-arch-studio-web.vercel.app';
+};
+
+const FRONTEND_HOST = getFrontendHost();
+
+// Debug log to verify environment variable
+console.log('🔧 API URL being used:', API_URL);
+console.log('🔧 Frontend Host being used:', FRONTEND_HOST);
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
   const url = `${API_URL}/api/${endpoint}`;
@@ -8,6 +23,7 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
       next: { revalidate: 3600 },
       headers: {
         'Content-Type': 'application/json',
+        'Host': FRONTEND_HOST,
       },
     });
     
