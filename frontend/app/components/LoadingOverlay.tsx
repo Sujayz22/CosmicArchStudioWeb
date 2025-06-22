@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, cubicBezier } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useLoading } from '../context/LoadingContext';
 import { usePathname } from 'next/navigation';
@@ -34,7 +34,7 @@ const LoadingOverlay = () => {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: [0.16, 1, 0.3, 1],
+        ease: cubicBezier(0.16, 1, 0.3, 1),
         when: "beforeChildren",
         staggerChildren: 0.1
       }
@@ -43,7 +43,7 @@ const LoadingOverlay = () => {
       y: "-100vh",
       transition: {
         duration: 0.9,
-        ease: [0.16, 1, 0.3, 1]
+        ease: cubicBezier(0.16, 1, 0.3, 1)
       }
     }
   };
@@ -57,7 +57,7 @@ const LoadingOverlay = () => {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 10
       }
