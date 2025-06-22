@@ -8,7 +8,7 @@ interface ClientFormType {
 
 export async function getClientFormSchema(): Promise<ClientFormType> {
   try {
-    console.log('Starting to fetch clientform schema...');
+    
     
     // Get the schema from the content-type-builder endpoint
     const response = await fetchFromStrapi('/content-type-builder/content-types/api::clientform.clientform', {
@@ -17,7 +17,7 @@ export async function getClientFormSchema(): Promise<ClientFormType> {
       }
     });
     
-    console.log('Full Strapi Response:', JSON.stringify(response, null, 2));
+    
     
     if (!response?.data) {
       console.error('No data in response:', response);

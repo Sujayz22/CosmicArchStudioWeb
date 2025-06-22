@@ -24,7 +24,7 @@ export interface Service {
 
 export async function getServices(): Promise<Service[]> {
   try {
-    console.log('Fetching services...');
+    
     const response = await fetchFromStrapi('/services', {
       populate: ['image', 'feature'],
     });
@@ -54,7 +54,7 @@ export async function getServices(): Promise<Service[]> {
       publishedAt: service.publishedAt,
     }));
 
-    console.log('Services fetched successfully:', services);
+    
     return services;
   } catch (error) {
     console.error('Error in getServices:', error);
