@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaInstagram, FaLinkedin, FaXTwitter, FaEnvelope, FaPhone, FaLocationDot } from 'react-icons/fa6';
 import { AnimatedSubscribeButton } from '@/components/magicui/animated-subscribe-button';
@@ -43,19 +43,18 @@ const CTA = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [projectTypes, setProjectTypes] = useState<string[]>([]);
-  const [dataFetched, setDataFetched] = useState(false);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     const fetchData = async () => {
       // Prevent multiple fetches
-      if (dataFetched) {
+      if (hasFetched.current) {
         return;
       }
       
-      
       try {
         setLoading(true);
-        setDataFetched(true);
+        hasFetched.current = true;
         
         const [contactResponse, schemaResponse] = await Promise.all([
           fetchFromStrapi('/contact'),
@@ -66,21 +65,20 @@ const CTA = () => {
           throw new Error('Invalid contact data structure received from API');
         }
 
-  
         setContactData(contactResponse);
         setProjectTypes(schemaResponse.type);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch data');
         // Reset the flag on error so we can retry
-        setDataFetched(false);
+        hasFetched.current = false;
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dataFetched]); // Only depend on dataFetched state
+  }, []); // Empty dependency array - only run once
 
   const [formData, setFormData] = useState({
     name: '',

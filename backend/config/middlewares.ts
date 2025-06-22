@@ -30,16 +30,17 @@ export default [
   {
     name: 'strapi::cors',
     config: {
-      enabled: true,
       headers: '*',
       origin: [
+        'http://localhost:3000',
         'https://calm-addition-271c24a97d.strapiapp.com',
         'https://cosmic-arch-studio-web.vercel.app',
         'https://cosmicarchstudio.in',
         /^https:\/\/.*\.vercel\.app$/,
         /^https:\/\/.*\.netlify\.app$/,
         /^https:\/\/.*\.onrender\.com$/,
-      ],
+      ],methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      keepHeaderOnError: true,
     },
   },
   'strapi::poweredBy',
