@@ -36,6 +36,7 @@ export default [
         'https://calm-addition-271c24a97d.strapiapp.com',
         'https://cosmic-arch-studio-web.vercel.app',
         'https://cosmicarchstudio.in',
+        'https://www.cosmicarchstudio.in',
         /^https:\/\/.*\.vercel\.app$/,
         /^https:\/\/.*\.netlify\.app$/,
         /^https:\/\/.*\.onrender\.com$/,
