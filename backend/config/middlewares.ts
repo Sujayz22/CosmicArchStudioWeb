@@ -27,7 +27,22 @@ export default [
       },
     },
   },
-  'strapi::cors',
+  {
+    name: 'strapi::cors',
+    config: {
+      enabled: true,
+      headers: '*',
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:1337',
+        'https://cosmic-arch-studio-web.vercel.app',
+        'https://cosmicarchstudio.in',
+        /^https:\/\/.*\.vercel\.app$/,
+        /^https:\/\/.*\.netlify\.app$/,
+        /^https:\/\/.*\.onrender\.com$/,
+      ],
+    },
+  },
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',

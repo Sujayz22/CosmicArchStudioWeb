@@ -1,14 +1,31 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const res = await fetch(`${API_URL}/api/${endpoint}`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) {
-    throw new Error(`API call failed: ${res.statusText}`);
+  const url = `${API_URL}/api/${endpoint}`;
+  
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: 3600 },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!res.ok) {
+      console.error(`API call failed for ${url}:`, {
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+      });
+      throw new Error(`API call failed: ${res.status} ${res.statusText}`);
+    }
+    
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching from ${url}:`, error);
+    throw error;
   }
-  const data = await res.json();
-  return data;
 }
 
 interface ImageFormat {
