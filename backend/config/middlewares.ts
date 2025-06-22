@@ -33,8 +33,7 @@ export default [
       enabled: true,
       headers: '*',
       origin: [
-        'http://localhost:3000',
-        'http://localhost:1337',
+        'https://calm-addition-271c24a97d.strapiapp.com',
         'https://cosmic-arch-studio-web.vercel.app',
         'https://cosmicarchstudio.in',
         /^https:\/\/.*\.vercel\.app$/,
