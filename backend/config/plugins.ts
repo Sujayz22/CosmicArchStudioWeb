@@ -22,4 +22,18 @@ export default ({ env }) => ({
         },
       },
     },
+    "strapi-csv-import-export": {
+      config: {
+        authorizedExports: [
+          "api::machine.machine",
+          "api::clientform.clientform",
+          "api::newsletter.newsletter"
+        ],
+        authorizedImports: [
+          "api::machine.machine",
+          "api::clientform.clientform",
+          "api::newsletter.newsletter"
+        ]
+      }
+    },
   });
