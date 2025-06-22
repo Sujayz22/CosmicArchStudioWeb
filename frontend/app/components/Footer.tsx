@@ -13,25 +13,19 @@ const Footer = () => {
     triggerOnce: false,
   });
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-
   return (
     <AnimatePresence>
       <motion.footer
         ref={ref}
-        initial={isMobile ? {} : { opacity: 0, y: 50 }}
-        animate={isMobile ? {} : inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        exit={isMobile ? {} : { opacity: 0, y: 50 }}
-        transition={
-          isMobile
-            ? {}
-            : {
-                duration: 0.8,
-                ease: 'easeOut',
-                opacity: { duration: 0.6 },
-                y: { duration: 0.8 },
-              }
-        }
+        initial={{ opacity: 0, y: 50 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        exit={{ opacity: 0, y: 50 }}
+        transition={{
+          duration: 0.8,
+          ease: 'easeOut',
+          opacity: { duration: 0.6 },
+          y: { duration: 0.8 },
+        }}
         className="bg-primary text-white rounded-[2.5rem] mx-4 mb-4 md:mx-8 md:mb-12"
       >
         <motion.div 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaInstagram, FaLinkedin, FaXTwitter, FaEnvelope, FaPhone, FaLocationDot } from 'react-icons/fa6';
 import { AnimatedSubscribeButton } from '@/components/magicui/animated-subscribe-button';
@@ -42,10 +42,22 @@ const CTA = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [projectTypes, setProjectTypes] = useState<string[]>([]);
+  const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      // Prevent multiple fetches
+      if (dataFetched) {
+        console.log('Data already fetched, skipping...');
+        return;
+      }
+      
+      console.log('Fetching contact data...');
+      
       try {
+        setLoading(true);
+        setDataFetched(true);
+        
         const [contactResponse, schemaResponse] = await Promise.all([
           fetchFromStrapi('/contact'),
           getClientFormSchema()
@@ -55,18 +67,21 @@ const CTA = () => {
           throw new Error('Invalid contact data structure received from API');
         }
 
+        console.log('Contact data fetched successfully');
         setContactData(contactResponse);
         setProjectTypes(schemaResponse.type);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch data');
+        // Reset the flag on error so we can retry
+        setDataFetched(false);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [dataFetched]); // Only depend on dataFetched state
 
   const [formData, setFormData] = useState({
     name: '',
@@ -143,9 +158,9 @@ const CTA = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = useCallback((field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -180,7 +195,6 @@ const CTA = () => {
   }
 
   const contact = contactData.data;
-  console.log('Using contact data:', contact);
 
   return (
     <AnimatePresence>

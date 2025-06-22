@@ -63,7 +63,7 @@ const Hero = () => {
 
   return (
     <section className="min-h-screen bg-neutral-light relative">
-      <div className="container-custom pt-16 pb-12 sm:pt-25">
+      <div className="container-custom pt-4 md:pt-16 pb-12 sm:pt-25">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Text Content */}
           <div className="space-y-6 md:space-y-8">

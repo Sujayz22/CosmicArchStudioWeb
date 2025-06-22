@@ -93,7 +93,7 @@ const Navbar = () => {
                 alt="Cosmic Arch Studio Logo" 
                 className="h-10 w-auto"
               />
-              <div className="hidden md:block">
+              <div className="hidden xl:block">
                 <span className="font-display font-bold">Cosmic</span>{" "}
                 <span className="font-sans font-light">Arch Studio</span>
               </div>
@@ -189,29 +189,29 @@ const Navbar = () => {
             className="fixed inset-0 bg-neutral-light z-40 md:hidden"
           >
             <div className="flex flex-col items-start p-6 pt-24">
-              <Link href="/" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/" className="w-full text-neutral text-3xl font-semibold hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Home
               </Link>
-              <Link href="/about" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/about" className="w-full text-neutral text-3xl font-semibold hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 About
               </Link>
               <button
                 type="button"
                 onClick={e => { handleServicesClick(e); setIsOpen(false); }}
-                className="w-full text-left text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors bg-transparent border-none cursor-pointer"
+                className="w-full text-left text-neutral hover:text-primary text-3xl font-semibold py-4 hover:bg-secondary rounded-xl px-4 transition-colors bg-transparent border-none cursor-pointer"
               >
                 Services
               </button>
-              <Link href="/projects" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/projects" className="w-full text-neutral text-3xl font-semibold hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Projects
               </Link>
-              <Link href="/gallery" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/gallery" className="w-full text-neutral text-3xl font-semibold hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Gallery
               </Link>
-              <Link href="/reviews" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/reviews" className="w-full text-neutral hover:text-primary text-3xl font-semibold py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Reviews
               </Link>
-              <Link href="/contact" className="w-full text-neutral hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link href="/contact" className="w-full text-neutral text-3xl font-semibold hover:text-primary py-4 hover:bg-secondary rounded-xl px-4 transition-colors" onClick={() => setIsOpen(false)}>
                 Contact
               </Link>
             </div>

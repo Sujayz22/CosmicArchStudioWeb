@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaHome, FaBath } from 'react-icons/fa';
 import { MdOutlineDesignServices } from "react-icons/md";
@@ -28,6 +28,7 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const bodyRef = useRef<HTMLBodyElement | null>(null);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -49,6 +50,40 @@ export default function Services() {
 
     fetchServices();
   }, []);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedService) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      
+      // Lock body scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore body scroll
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+
+    // Cleanup function to restore scrolling when component unmounts
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [selectedService]);
 
   if (loading) {
     return (
@@ -153,15 +188,20 @@ export default function Services() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedService(null)}
+            onWheel={(e) => e.preventDefault()}
+            onTouchMove={(e) => e.preventDefault()}
+            style={{ overscrollBehavior: 'contain' }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
             >
-              <div className="relative h-64 md:h-96">
+              <div className="relative h-64 md:h-96 flex-shrink-0">
                 {selectedService.image?.url && (
                   <Image
                     src={`${selectedService.image.url}`}
@@ -171,7 +211,7 @@ export default function Services() {
                   />
                 )}
                 <button
-                  className="absolute top-4 right-4 bg-white/90 rounded-full p-2 hover:bg-white transition-colors"
+                  className="absolute top-4 right-4 bg-white/90 rounded-full p-2 hover:bg-white transition-colors z-10"
                   onClick={() => setSelectedService(null)}
                 >
                   <svg
@@ -184,7 +224,7 @@ export default function Services() {
                   </svg>
                 </button>
               </div>
-              <div className="p-6 md:p-8">
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
                 <div className="flex items-center gap-4 mb-6">
                   {selectedService.icon && iconMap[selectedService.icon] && (
                     <div className="text-4xl text-primary">

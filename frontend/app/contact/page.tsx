@@ -3,7 +3,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
-import CTA from '../components/CTA';
 import { TextAnimate } from '@/components/magicui/text-animate';
 
 const ContactPage = () => {
@@ -11,8 +10,8 @@ const ContactPage = () => {
     <main className=" bg-neutral-light">
       <Navbar />
       <div className="pt-20 ">
-        {/* Hero Section */}
-        <div className="container-custom py-16 md:py-24">
+        {/* title Section */}
+        <div className="container-custom px-6 md:px-16 py-8 md:py-24">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-secondary rounded-full animate-pulse" />
             <TextAnimate

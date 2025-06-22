@@ -129,4 +129,38 @@ export interface ProjectResponse {
       total: number;
     };
   };
+}
+
+export interface Service {
+  id: number;
+  title: string;
+  description: string;
+  longDescription: string;
+  icon: string;
+  image: {
+    id: number;
+    name: string;
+    url: string;
+    alternativeText: string | null;
+    caption: string | null;
+  };
+  feature: Array<{
+    id: number;
+    title: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+export interface ServiceResponse {
+  data: Service[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
 } 

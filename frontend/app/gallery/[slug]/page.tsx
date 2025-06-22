@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { fetchAPI, Gallery } from '@/lib/api';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface GalleryPageProps {
   params: {
@@ -18,6 +19,15 @@ export default function GalleryPage({ params }: GalleryPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [mainIdx, setMainIdx] = useState(0);
   const thumbRowRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const fetchGalleries = async () => {
@@ -50,6 +60,57 @@ export default function GalleryPage({ params }: GalleryPageProps) {
 
     fetchGalleries();
   }, [params.slug]);
+
+  // Scroll to top when component mounts or slug changes
+  useEffect(() => {
+    // Use setTimeout to ensure the scroll happens after the component is fully rendered
+    const timer = setTimeout(() => {
+      scrollToTop();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [params.slug]);
+
+  // Also scroll to top when loading completes
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => {
+        scrollToTop();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  // Force scroll to top on mount
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
+  // Listen for route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      scrollToTop();
+    };
+
+    // Add event listener for route changes
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
+
+  // Scroll to top when gallery data is loaded
+  useEffect(() => {
+    if (gallery && !loading) {
+      const timer = setTimeout(() => {
+        scrollToTop();
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [gallery, loading]);
 
   // Scroll thumbnail row by a fixed amount
   const scrollThumbnails = (dir: "left" | "right") => {
@@ -92,6 +153,9 @@ export default function GalleryPage({ params }: GalleryPageProps) {
 
   return (
     <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
+      {/* Scroll anchor */}
+      <div ref={topRef} id="top" />
+      
       <div className="w-full max-w-[1300px] flex flex-col items-start mt-16 mx-auto px-4">
         {/* Title */}
         <h1 className="text-5xl md:text-6xl font-extrabold mb-2 text-neutral-900">
@@ -113,7 +177,7 @@ export default function GalleryPage({ params }: GalleryPageProps) {
             alt={gallery.collection[mainIdx].alternativeText || gallery.title}
             width={1200}
             height={600}
-            className="w-full h-[500px] md:h-[800px] object-contain bg-neutral-100"
+            className="w-full h-[300px] md:h-[800px] object-contain bg-neutral-100"
             priority
           />
         </div>
@@ -210,25 +274,18 @@ export default function GalleryPage({ params }: GalleryPageProps) {
 
         {/* Back Button */}
         <div className="text-center mt-12 w-full">
-          <Link
-            href="/gallery"
-            className="inline-flex items-center gap-2 bg-[#4b6b4a] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#3d5a3c] transition-colors"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              className="rotate-180"
-            >
-              <path
-                d="M7 13L13 7M13 7H7M13 7V13"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <Link href="/gallery" className="inline-flex items-center gap-3 bg-primary text-white font-semibold px-7 py-3 rounded-full text-lg shadow transition group">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary group-hover:bg-secondary/80 transition-colors">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 20 20"
+                fill="none"
+                className="transition-transform duration-300 group-hover:rotate-45"
+              >
+                <path d="M13 7L7 13M7 13L7 7M7 13L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
             Back to Gallery
           </Link>
         </div>

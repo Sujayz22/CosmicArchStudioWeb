@@ -37,7 +37,11 @@ const Newsletter = () => {
     setErrorMessage('');
 
     try {
-      const data = { email };
+      const data = { 
+        data: { 
+          email: email 
+        } 
+      };
       await postToStrapi('/newsletters', data);
       setStatus('success');
       setEmail('');

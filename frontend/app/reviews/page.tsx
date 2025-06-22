@@ -115,12 +115,12 @@ export default function ReviewsPage() {
             Reviews<span className="text-neutral-900">.</span>
           </h1>
         </span>
-        <p className="text-center text-xl text-neutral-700 max-w-2xl">
+        <p className="text-center text-xl text-neutral-700 max-w-2xl px-6 md:px-0">
           Hear from our happy clients about their experience working with Cosmic Arch Studio and the quality of our craftsmanship.
         </p>
       </div>
       {/* Reviews Grid */}
-      <div className="columns-1 md:columns-2 gap-8 max-w-4xl w-full">
+      <div className="columns-1 md:columns-2 gap-8 max-w-4xl w-full px-6 md:px-0">
         {reviews.map((review) => (
           <div key={review.id} className="bg-white rounded-2xl shadow p-6 mb-8 break-inside-avoid">
             {review.image && (

@@ -53,7 +53,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+    <main className="min-h-screen bg-neutral-light pb-16 px-4 sm:px-6 lg:px-2 flex flex-col items-center">
       <div className="w-full max-w-6xl">
         {/* Title */}
         <h1 className="mt-32 text-6xl md:text-7xl font-bold mb-8 flex items-center gap-2 text-left">

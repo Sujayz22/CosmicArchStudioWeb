@@ -4,54 +4,30 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import { Marquee } from '../components/magicui/marquee';
-import {cn} from '@/lib/utils';
 import Image from 'next/image';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { FaHome, FaBath } from 'react-icons/fa';
+import { FaHome} from 'react-icons/fa';
 import { MdOutlineDesignServices } from "react-icons/md";
 import { GiWoodenChair } from "react-icons/gi";
-import { CgDesignmodo, CgWorkAlt, CgProfile } from "react-icons/cg";
+import { CgWorkAlt, CgProfile } from "react-icons/cg";
 import { FaShop } from 'react-icons/fa6';
 import { RiLandscapeAiLine } from "react-icons/ri";
 import Link from 'next/link';
 import { NumberTicker } from '@/components/magicui/number-ticker';
 import { fetchAPI } from '@/lib/api';
-import type { Project } from '@/lib/api';
+import type { Project, Service } from '@/lib/api';
 import ScrollToTop from './components/ScrollToTop';
 import FAQ from './components/FAQ';
+import { getServices } from './actions/getServices';
 
-const services = [
-  {
-    icon: FaHome,
-    title: 'Residential Interior & Exterior Design',
-    description: 'Transform your home inside and out with our expert residential design services.'
-  },
-  {
-    icon: FaShop,
-    title: 'Commercial Interior & Exterior Design',
-    description: 'Enhance your business space with functional and stylish commercial design solutions.'
-  },
-  {
-    icon: RiLandscapeAiLine,
-    title: 'Landscape Design',
-    description: 'Create beautiful, functional outdoor spaces with our landscape design expertise.'
-  },
-  {
-    icon: GiWoodenChair,
-    title: 'Furniture Design',
-    description: 'Custom furniture pieces designed to fit your style and space perfectly.'
-  },
-  {
-    icon: MdOutlineDesignServices,
-    title: 'Design Consultation',
-    description: 'Get expert advice and creative direction for your next design project.'
-  },
-  {
-    icon: CgWorkAlt,
-    title: 'Execution',
-    description: 'This is where your vision takes tangible form. We meticulously translate designs into physical reality, ensuring every detail is precisely built to specification and brought to life with unwavering quality.'
-  },
-];
+// Map of icon names to components
+const iconMap: { [key: string]: React.ElementType } = {
+  FaHome,
+  FaShop,
+  RiLandscapeAiLine,
+  GiWoodenChair,
+  MdOutlineDesignServices,
+  CgWorkAlt,
+};
 
 // Add new interface for consolidated data
 interface HomePageData {
@@ -69,6 +45,7 @@ export default function Home() {
   const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
   const [stats, setStats] = useState<{ number: number; title: string; description: string; symbol: boolean }[]>([]);
   const [reviews, setReviews] = useState<{ name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -78,11 +55,12 @@ export default function Home() {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse] = await Promise.all([
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await Promise.all([
           fetchAPI<{ data: Project[] }>('projects?populate=*'),
           fetchAPI<{ data: { images: any[] } }>('marquee?populate=images'),
           fetchAPI<{ data: any[] }>('stats'),
-          fetchAPI<{ data: any[] }>('reviews?populate=*')
+          fetchAPI<{ data: any[] }>('reviews?populate=*'),
+          getServices()
         ]);
 
         if (projectsResponse.data) {
@@ -120,6 +98,10 @@ export default function Home() {
               url: review.profilepic.formats?.thumbnail?.url || review.profilepic.url
             } : null
           })));
+        }
+
+        if (servicesResponse) {
+          setServices(servicesResponse);
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -212,8 +194,10 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">The Design <br />Alchemists</h1>
               <Link href="/about" className="relative inline-block">
                <button className="flex items-center gap-4 py-3 rounded-full font-medium text-black group">
-                  Know more
-                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+                  <span className="relative inline-block">
+                    Know more
+                    <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+                  </span>
                 
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
                   <svg
@@ -284,13 +268,19 @@ export default function Home() {
             {/* Services Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
               {services.map((service, idx) => {
-                const Icon = service.icon;
+                const Icon = iconMap[service.icon];
                 return (
                   <div
-                    key={idx}
+                    key={service.id}
                     className="group flex flex-col items-start bg-[#e6e9e3] rounded-2xl p-8 shadow transition-all duration-500 ease-in-out max-w-sm w-full mx-auto hover:-translate-y-2 hover:scale-95"
                   >
-                    <Icon className="text-5xl text-[#495f43] mb-4 transition-all duration-500 ease-in-out group-hover:-translate-y-1 group-hover:scale-90" />
+                    {Icon ? (
+                      <Icon className="text-5xl text-[#495f43] mb-4 transition-all duration-500 ease-in-out group-hover:-translate-y-1 group-hover:scale-90" />
+                    ) : (
+                      <div className="w-12 h-12 bg-[#495f43] rounded-lg mb-4 flex items-center justify-center">
+                        <span className="text-white text-xl font-bold">{service.title.charAt(0)}</span>
+                      </div>
+                    )}
                     <div className="text-black text-xl font-bold text-left mb-2 transition-all duration-500 ease-in-out">
                       {service.title}
                     </div>
@@ -344,22 +334,40 @@ export default function Home() {
                 <Link
                   href={`/projects/${card.slug}`}
                   aria-label={`View project: ${card.Title}`}
-                  className="group w-full max-w-5xl flex justify-center items-center cursor-view-project"
+                  className="group w-full max-w-5xl flex justify-center items-center cursor-view-project px-4 sm:px-6 lg:px-0"
                 >
                   <div
-                    className={`relative rounded-3xl shadow-lg w-full max-w-5xl h-[60vh] flex flex-col md:flex-row gap-16 items-center justify-center p-10 ${idx % 2 === 0 ? 'bg-primary text-white' : 'bg-secondary text-black'} cursor-pointer transition-transform duration-200`}
+                    className={`relative rounded-3xl shadow-lg w-full max-w-5xl h-[80vh] sm:h-[85vh] lg:h-[60vh] flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-16 items-center justify-center p-4 sm:p-6 lg:p-10 ${idx % 2 === 0 ? 'bg-primary text-white' : 'bg-secondary text-black'} cursor-pointer transition-transform duration-200`}
                   >
-                    <Image src={card.coverImage.url} alt={card.client} width={400} height={400} className="rounded-2xl object-cover w-[400px] h-[400px]" />
-                    <div className="flex-1 flex flex-col gap-4 justify-center">
-                      <h3 className={`text-3xl font-bold mb-2 ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.Title}</h3>
-                      <p className={`mb-2 text-base md:text-lg ${idx % 2 === 0 ? 'text-white/90' : 'text-black/80'}`}>{card.description.split(' ').slice(0, 30).join(' ')}...</p>
-                      <div className="flex gap-2 mb-2">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.category}</span>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.type}</span>
+                    <div className="w-full lg:w-auto flex justify-center">
+                      <Image 
+                        src={card.coverImage.url} 
+                        alt={card.client} 
+                        width={400} 
+                        height={400} 
+                        className="rounded-2xl object-cover w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] lg:w-[400px] lg:h-[400px]" 
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-3 sm:gap-4 justify-center text-center lg:text-left">
+                      <h3 className={`text-2xl sm:text-3xl font-bold mb-2 ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.Title}</h3>
+                      <p className={`mb-2 text-sm sm:text-base lg:text-lg ${idx % 2 === 0 ? 'text-white/90' : 'text-black/80'}`}>
+                        {card.description.split(' ').slice(0, 25).join(' ')}...
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-2 justify-center lg:justify-start">
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.category}</span>
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${idx % 2 === 0 ? 'bg-white text-primary' : 'bg-black text-white'}`}>{card.type}</span>
                       </div>
-                      <blockquote className={`italic border-l-4 pl-4 mb-2 ${idx % 2 === 0 ? 'text-white/80 border-white/50' : 'text-black/70 border-black/30'}`}>{card.review}</blockquote>
-                      <div className="flex items-center gap-3 mt-2">
-                        <Image src={card.coverImage.url} alt={card.client} width={32} height={32} className={`rounded-full object-cover border-2 ${idx % 2 === 0 ? 'border-white' : 'border-black'} aspect-square`} />
+                      <blockquote className={`italic border-l-4 pl-3 sm:pl-4 mb-2 text-sm sm:text-base ${idx % 2 === 0 ? 'text-white/80 border-white/50' : 'text-black/70 border-black/30'}`}>
+                        {card.review.length > 100 ? `${card.review.substring(0, 100)}...` : card.review}
+                      </blockquote>
+                      <div className="flex items-center gap-3 mt-2 justify-center lg:justify-start">
+                        <Image 
+                          src={card.coverImage.url} 
+                          alt={card.client} 
+                          width={32} 
+                          height={32} 
+                          className={`rounded-full object-cover border-2 ${idx % 2 === 0 ? 'border-white' : 'border-black'} aspect-square w-8 h-8 sm:w-10 sm:h-10`} 
+                        />
                         <span className={`font-semibold text-sm ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.client}</span>
                       </div>
                     </div>
@@ -386,7 +394,7 @@ export default function Home() {
         </section>
 
         {/* Reviews Section */}
-        <section className="container-custom py-16 w-full">
+        <section className="container-custom pb-2 pt-16 lg:py-16 w-full">
           <div className="flex flex-col items-center mb-10">
             <span className="inline-block px-3 py-1 bg-yellow-400 text-black rounded-full font-bold text-s mb-4">Reviews</span>
             <h2 className="text-4xl md:text-5xl font-bold text-center mb-2">Hear from our clients</h2>
