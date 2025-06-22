@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import {SpeedInsights} from "@vercel/speed-insights/next";
+import {Analytics} from "@vercel/analytics/next";
 import ClientLayout from "./components/ClientLayout";
 import { SmoothCursor } from "@/components/ui/smooth-cursor";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,8 @@ export default function RootLayout({
       )}>
         <ClientLayout>
           {children}
+          <SpeedInsights />
+          <Analytics />
           <SmoothCursor />
         </ClientLayout>
       </body>
