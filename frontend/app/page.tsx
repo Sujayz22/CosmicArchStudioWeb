@@ -18,6 +18,9 @@ import type { Project, Service } from '@/lib/api';
 import ScrollToTop from './components/ScrollToTop';
 import FAQ from './components/FAQ';
 import { getServices } from './actions/getServices';
+import { StatsSkeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 // Map of icon names to components
 const iconMap: { [key: string]: React.ElementType } = {
@@ -40,6 +43,11 @@ interface HomePageData {
 export default function Home() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
+
+  const { ref: servicesAnimationRef, inView: servicesInView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+  });
 
   const [projectCards, setProjectCards] = useState<Project[]>([]);
   const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
@@ -166,9 +174,51 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
+      <main className="min-h-screen bg-dark">
+        <ScrollToTop />
+        <Navbar />
+        <div className="pt-20">
+          <Hero />
+          {/* About Section and Marquee Gallery */}
+          <section className="container-custom py-16">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-12 gap-8 md:gap-0">
+              <div className="flex-1">
+                <span className="inline-block px-3 py-1 bg-secondary text-black rounded-full font-bold text-s mb-4">About us</span>
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">The Design <br />Alchemists</h1>
+                <Link href="/about" className="relative inline-block">
+                 <button className="flex items-center gap-4 py-3 rounded-full font-medium text-black group">
+                    <span className="relative inline-block">
+                      Know more
+                      <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+                    </span>
+                  
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      className="transition-transform duration-300 group-hover:rotate-45"
+                    >
+                      <path d="M7 13L13 7M13 7H7M13 7V13" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                </button></Link>
+             </div>
+              <div className="flex-2 md:pl-12">
+                <p className="text-lg bg-primary p-4 rounded-lg text-white max-w-2xl md:mt-8">
+                  Welcome to Cosmic Arch Studio, your trusted home improvement experts, dedicated to transforming homes with precision and care. With years of experience in building kitchens, bathrooms, garages, and more, we take pride in delivering top-quality craftsmanship and a seamless customer experience. Our mission is to bring your vision to life while ensuring clear communication and expert guidance at every step. Let's create a home you'll love!
+                </p>
+              </div>
+            </div>
+            
+            {/* Stats Section Skeleton */}
+            <div className="w-full bg-neutral-200 rounded-2xl mt-16 py-14 px-2 flex flex-col items-center">
+              <StatsSkeleton />
+            </div>
+          </section>
+        </div>
+      </main>
     );
   }
 
@@ -255,7 +305,13 @@ export default function Home() {
 
         {/* What We Do Section */}
         <section ref={servicesRef} id="services-section" className="container-custom py-16">
-          <div className="rounded-3xl bg-[#495f43] text-white p-10">
+          <motion.div
+            ref={servicesAnimationRef}
+            initial={{ opacity: 0, y: 50 }}
+            animate={servicesInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="rounded-3xl bg-[#495f43] text-white p-10"
+          >
             <div className="flex flex-col items-center">
               <span className="inline-block px-3 py-1 bg-yellow-400 text-black rounded-full font-bold text-s mb-4">
                 Services
@@ -310,7 +366,7 @@ export default function Home() {
                 </span>
               </Link>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Projects Section */}
@@ -337,18 +393,20 @@ export default function Home() {
                   className="group w-full max-w-5xl flex justify-center items-center cursor-view-project px-4 sm:px-6 lg:px-0"
                 >
                   <div
-                    className={`relative rounded-3xl shadow-lg w-full max-w-5xl h-[80vh] sm:h-[85vh] lg:h-[60vh] flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-16 items-center justify-center p-4 sm:p-6 lg:p-10 ${idx % 2 === 0 ? 'bg-primary text-white' : 'bg-secondary text-black'} cursor-pointer transition-transform duration-200`}
+                    className={`relative rounded-3xl shadow-lg w-full max-w-5xl h-[80vh] sm:h-[85vh] lg:h-[70vh] flex flex-col lg:flex-row gap-0 lg:gap-16 items-stretch justify-center p-0 lg:p-10 overflow-hidden ${idx % 2 === 0 ? 'bg-primary text-white' : 'bg-secondary text-black'} cursor-pointer transition-transform duration-200`}
                   >
-                    <div className="w-full lg:w-auto flex justify-center">
+                    {/* Image Top on Mobile, Side on lg+ */}
+                    <div className="w-full lg:w-auto flex-shrink-0">
                       <Image 
                         src={card.coverImage.url} 
                         alt={card.client} 
                         width={400} 
                         height={400} 
-                        className="rounded-2xl object-cover w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] lg:w-[400px] lg:h-[400px]" 
+                        className="w-full h-[240px] sm:h-[320px] lg:w-[400px] lg:h-full object-cover rounded-t-3xl lg:rounded-2xl lg:rounded-l-3xl lg:rounded-tr-none" 
                       />
                     </div>
-                    <div className="flex-1 flex flex-col gap-3 sm:gap-4 justify-center text-center lg:text-left">
+                    {/* Text Content Below on Mobile, Side on lg+ */}
+                    <div className="flex-1 flex flex-col gap-3 sm:gap-4 justify-center text-center lg:text-left p-6 lg:p-0 lg:pl-10 bg-inherit rounded-b-3xl lg:rounded-b-none lg:rounded-r-3xl">
                       <h3 className={`text-2xl sm:text-3xl font-bold mb-2 ${idx % 2 === 0 ? 'text-white' : 'text-black'}`}>{card.Title}</h3>
                       <p className={`mb-2 text-sm sm:text-base lg:text-lg ${idx % 2 === 0 ? 'text-white/90' : 'text-black/80'}`}>
                         {card.description.split(' ').slice(0, 25).join(' ')}...

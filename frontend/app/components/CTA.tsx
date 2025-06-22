@@ -9,6 +9,7 @@ import { ChevronRight, Check } from 'lucide-react';
 import { fetchFromStrapi, postToStrapi } from '../utils/strapi';
 import Newsletter from './Newsletter';
 import { getClientFormSchema } from '../actions/getClientFormSchema';
+import { CTASkeleton } from '@/components/ui/skeleton';
 
 interface ContactData {
   data: {
@@ -48,11 +49,9 @@ const CTA = () => {
     const fetchData = async () => {
       // Prevent multiple fetches
       if (dataFetched) {
-        console.log('Data already fetched, skipping...');
         return;
       }
       
-      console.log('Fetching contact data...');
       
       try {
         setLoading(true);
@@ -67,7 +66,7 @@ const CTA = () => {
           throw new Error('Invalid contact data structure received from API');
         }
 
-        console.log('Contact data fetched successfully');
+  
         setContactData(contactResponse);
         setProjectTypes(schemaResponse.type);
       } catch (error) {
@@ -171,11 +170,7 @@ const CTA = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <CTASkeleton />;
   }
 
   if (error) {
@@ -201,13 +196,13 @@ const CTA = () => {
       {/* CTA Section */}
       <div
         id="cta-section"
-        className="bg-primary rounded-[2.5rem] py-4 mx-4 mb-4 md:mx-14 md:mb-12 md:py-16"
+        className="bg-primary rounded-[2.5rem] py-4 mx-4 mb-4 md:mx-14 md:mb-12 md:py-8"
       >
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Contact Info */}
-            <div className="space-y-8">
-              <div className="space-y-6 bg-muted/55 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg">
+            <div className="space-y-4">
+              <div className="space-y-3 bg-muted/55 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg">
                 <div
                   className="group cursor-email hover:bg-primary/30 p-2 rounded-lg transition-colors"
                   onClick={() => window.location.href = `mailto:${contact.email}`}
@@ -253,9 +248,9 @@ const CTA = () => {
                 )}
 
                 {contact.showOfficeHours && (
-                  <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
-                    <h3 className="text-sm uppercase tracking-wider text-light/60 mb-4">OPENING HOURS</h3>
-                    <div className="grid grid-cols-2 gap-y-3 text-sm sm:text-base">
+                  <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-4 shadow-lg'>
+                    <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2">OPENING HOURS</h3>
+                    <div className="grid grid-cols-2 gap-y-1 text-sm sm:text-base">
                       <div className="text-light">
                         <span className="font-medium">Monday - Friday</span>
                       </div>
@@ -279,7 +274,7 @@ const CTA = () => {
                 )}
 
                 <div>
-                  <h3 className="text-sm uppercase tracking-wider text-light/60 mb-4">FOLLOW US</h3>
+                  <h3 className="text-sm uppercase tracking-wider text-light/60 mb-2">FOLLOW US</h3>
                   <div className="flex gap-4">
                     {contact.instagram && (
                       <a href={contact.instagram} target="_blank" rel="noopener noreferrer" 
@@ -303,7 +298,7 @@ const CTA = () => {
                 </div>
 
                 {/* Newsletter Section */}
-                <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-8 shadow-lg'>
+                <div className='bg-accent/55 backdrop-blur-sm rounded-xl p-6 shadow-lg'>
                   <Newsletter />
                 </div>
               </div>
@@ -311,10 +306,10 @@ const CTA = () => {
 
             {/* Right Column - Form */}
             <div className="bg-white/95 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg">
-              <h2 className="text-4xl font-bold font-playfair text-primary mb-2">Get a Free Estimate</h2>
-              <h4 className="text-neutral-600 mb-6">Get your custom quote now! Contact one of our assessors by phone or by filling out the form below to get started.</h4>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h2 className="text-2xl font-bold font-playfair text-primary mb-1">Get a Free Estimate</h2>
+              <h4 className="text-neutral-600 mb-3 text-sm">Get your custom quote now! Contact one of our assessors by phone or by filling out the form below to get started.</h4>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">
                       Name<span className="text-red-500">*</span>
@@ -324,7 +319,7 @@ const CTA = () => {
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                       placeholder="John Doe"
                       required
                     />
@@ -338,7 +333,7 @@ const CTA = () => {
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                       placeholder="+(91) XXXXX XXXXX"
                       required
                     />
@@ -354,7 +349,7 @@ const CTA = () => {
                     id="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                    className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                     placeholder="johndoe@email.com"
                     required
                   />
@@ -368,7 +363,7 @@ const CTA = () => {
                     id="projectType"
                     value={formData.projectType}
                     onChange={(e) => handleInputChange('projectType', e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800"
+                    className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 text-sm"
                     required
                   >
                     <option value="">Select a project type</option>
@@ -380,7 +375,7 @@ const CTA = () => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <label htmlFor="location" className="block text-sm font-medium text-neutral-700 mb-1">
                       Location<span className="text-red-500">*</span>
@@ -390,7 +385,7 @@ const CTA = () => {
                       id="location"
                       value={formData.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                       placeholder="City, State"
                       required
                     />
@@ -404,7 +399,7 @@ const CTA = () => {
                       id="budget"
                       value={formData.budget}
                       onChange={(e) => handleInputChange('budget', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                       placeholder="Enter your budget"
                       required
                     />
@@ -418,14 +413,14 @@ const CTA = () => {
                       id="projectSize"
                       value={formData.projectSize}
                       onChange={(e) => handleInputChange('projectSize', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 text-sm"
                       placeholder="e.g., 1500"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-neutral-700 mb-1">
                       Preferred Start Date
@@ -435,7 +430,7 @@ const CTA = () => {
                       id="startDate"
                       value={formData.startDate}
                       onChange={(e) => handleInputChange('startDate', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 text-sm"
                     />
                   </div>
                   <div>
@@ -447,7 +442,7 @@ const CTA = () => {
                       id="completionDate"
                       value={formData.completionDate}
                       onChange={(e) => handleInputChange('completionDate', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800"
+                      className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 text-sm"
                     />
                   </div>
                 </div>
@@ -460,7 +455,7 @@ const CTA = () => {
                     id="message"
                     value={formData.message}
                     onChange={(e) => handleInputChange('message', e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 min-h-[120px] mb-6"
+                    className="w-full px-3 py-1.5 rounded-lg border border-neutral/20 focus:outline-none focus:border-primary bg-white text-neutral-800 placeholder-neutral-400 min-h-[80px] mb-4 text-sm"
                     placeholder="Write your message here"
                     required
                   />

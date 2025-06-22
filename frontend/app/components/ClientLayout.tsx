@@ -8,6 +8,7 @@ import Lenis from 'lenis';
 import Footer from './Footer';
 import CTA from './CTA';
 import Navbar from './Navbar';
+import ScrollToTop from './ScrollToTop';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ 
@@ -25,6 +26,7 @@ function Content({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <ScrollToTop />
       <Navbar />
       {children}
       <CTA />

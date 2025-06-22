@@ -5,11 +5,19 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 import { fetchAPI } from '@/lib/api';
 import type { FAQ } from '@/lib/api';
 import Link from 'next/link';
+import { FAQSkeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 export default function FAQ() {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+  });
 
   useEffect(() => {
     const fetchFaqs = async () => {
@@ -29,30 +37,38 @@ export default function FAQ() {
   if (loading) {
     return (
       <section className="container-custom py-16">
-        <div className="bg-[#566c54] rounded-[3rem] p-0 md:p-0 flex flex-col md:flex-row items-stretch overflow-hidden">
-          <div className="flex-1 flex flex-col justify-center px-8 py-12 md:py-24 md:pl-16 md:pr-8 text-white">
-            <div className="text-2xl font-semibold">Loading FAQs...</div>
-          </div>
-        </div>
+        <FAQSkeleton />
       </section>
     );
   }
 
   if (error) {
     return (
-      <section className="container-custom py-16">
+      <motion.section
+        ref={ref}
+        initial={{ opacity: 0, y: 50 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="container-custom py-16"
+      >
         <div className="bg-[#566c54] rounded-[3rem] p-0 md:p-0 flex flex-col md:flex-row items-stretch overflow-hidden">
           <div className="flex-1 flex flex-col justify-center px-8 py-12 md:py-24 md:pl-16 md:pr-8 text-white">
             <div className="text-2xl font-semibold text-red-300">Error: {error}</div>
           </div>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
     <section className="container-custom py-16">
-      <div className="bg-[#566c54] rounded-[3rem] p-0 md:p-0 flex flex-col md:flex-row items-stretch overflow-hidden">
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 50 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="bg-[#566c54] rounded-[3rem] p-0 md:p-0 flex flex-col md:flex-row items-stretch overflow-hidden"
+      >
         {/* Left Column */}
         <div className="flex-1 flex flex-col justify-center px-8 py-12 md:py-24 md:pl-16 md:pr-8 text-white">
           <div className="mb-6 inline-flex items-center">
@@ -100,7 +116,7 @@ export default function FAQ() {
             ))}
           </Accordion>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 } 

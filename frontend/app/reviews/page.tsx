@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { fetchAPI } from "@/lib/api";
 import { CgProfile } from "react-icons/cg";
+import { ReviewCardSkeleton } from '@/components/ui/skeleton';
+import ScrollToTop from "../components/ScrollToTop";
 
 interface Review {
   id: number;
@@ -100,7 +102,16 @@ export default function ReviewsPage() {
               Reviews<span className="text-neutral-900">.</span>
             </h1>
           </span>
-          <div className="text-lg">Loading reviews...</div>
+          <p className="text-center text-xl text-neutral-700 max-w-2xl px-6 md:px-0">
+            Hear from our happy clients about their experience working with Cosmic Arch Studio and the quality of our craftsmanship.
+          </p>
+        </div>
+        
+        {/* Skeleton Grid */}
+        <div className="columns-1 md:columns-2 gap-8 max-w-4xl w-full px-6 md:px-0">
+          {[...Array(6)].map((_, i) => (
+            <ReviewCardSkeleton key={i} />
+          ))}
         </div>
       </main>
     );
@@ -108,6 +119,7 @@ export default function ReviewsPage() {
 
   return (
     <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
+      <ScrollToTop />
       {/* Title */}
       <div className="flex flex-col items-center mt-20 mb-14">
         <span className="bg-secondary rounded-2xl px-10 py-2 mb-8">

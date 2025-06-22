@@ -5,6 +5,7 @@ import { fetchAPI, Gallery } from '@/lib/api';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { GalleryDetailSkeleton } from '@/components/ui/skeleton';
 
 interface GalleryPageProps {
   params: {
@@ -122,8 +123,8 @@ export default function GalleryPage({ params }: GalleryPageProps) {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-neutral-light flex flex-col items-center justify-center py-12">
-        <div className="text-2xl font-semibold">Loading gallery...</div>
+      <main className="min-h-screen bg-neutral-light flex flex-col items-center py-12">
+        <GalleryDetailSkeleton />
       </main>
     );
   }

@@ -12,6 +12,7 @@ import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import ScrollToTop from '../components/ScrollToTop';
 import { getServices, Service } from '../actions/getServices';
+import { ServiceCardSkeleton } from '@/components/ui/skeleton';
 
 // Map of icon names to components
 const iconMap: { [key: string]: React.ElementType } = {
@@ -85,60 +86,13 @@ export default function Services() {
     };
   }, [selectedService]);
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-dark">
-        <ScrollToTop />
-        <Navbar />
-        <div className="pt-20">
-          <section className="container-custom py-16">
-            <div className="flex justify-center items-center min-h-[60vh]">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-dark">
-        <ScrollToTop />
-        <Navbar />
-        <div className="pt-20">
-          <section className="container-custom py-16">
-            <div className="flex justify-center items-center min-h-[60vh]">
-              <p className="text-red-500 text-lg">{error}</p>
-            </div>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
-  if (!services.length) {
-    return (
-      <main className="min-h-screen bg-dark">
-        <ScrollToTop />
-        <Navbar />
-        <div className="pt-20">
-          <section className="container-custom py-16">
-            <div className="flex justify-center items-center min-h-[60vh]">
-              <p className="text-neutral-600 text-lg">No services available at the moment.</p>
-            </div>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-dark">
       <ScrollToTop />
       <Navbar />
       <div className="pt-20 mb-8">
         <section className="container-custom py-16">
+          {/* Header - Always visible */}
           <div className="flex flex-col items-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-center px-3 rounded-full py-1 bg-yellow-400 mb-4">Our Services.</h1>
             <p className="text-center text-xl text-neutral-600 max-w-2xl">
@@ -146,37 +100,58 @@ export default function Services() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service) => {
-              const Icon = service.icon ? iconMap[service.icon] : null;
-              return (
-                <motion.div
-                  key={service.id}
-                  className="group cursor-pointer"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedService(service)}
-                >
-                  <div className="bg-white rounded-2xl p-6 shadow-lg h-full flex flex-col">
-                    {Icon && <Icon className="text-4xl text-primary mb-4" />}
-                    <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                    <p className="text-neutral-600 flex-grow">{service.description}</p>
-                    <div className="mt-4 flex items-center text-primary font-semibold">
-                      Learn more
-                      <svg
-                        className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+          {/* Content Section */}
+          {loading ? (
+            // Show skeleton loading for service cards only
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <ServiceCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            // Show error message
+            <div className="flex justify-center items-center min-h-[60vh]">
+              <p className="text-red-500 text-lg">{error}</p>
+            </div>
+          ) : !services.length ? (
+            // Show no services message
+            <div className="flex justify-center items-center min-h-[60vh]">
+              <p className="text-neutral-600 text-lg">No services available at the moment.</p>
+            </div>
+          ) : (
+            // Show actual service cards
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service) => {
+                const Icon = service.icon ? iconMap[service.icon] : null;
+                return (
+                  <motion.div
+                    key={service.id}
+                    className="group cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedService(service)}
+                  >
+                    <div className="bg-white rounded-2xl p-6 shadow-lg h-full flex flex-col">
+                      {Icon && <Icon className="text-4xl text-primary mb-4" />}
+                      <h3 className="text-xl font-bold mb-2">{service.title}</h3>
+                      <p className="text-neutral-600 flex-grow">{service.description}</p>
+                      <div className="mt-4 flex items-center text-primary font-semibold">
+                        Learn more
+                        <svg
+                          className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
 

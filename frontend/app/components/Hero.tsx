@@ -7,6 +7,7 @@ import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import Link from 'next/link';
 import { fetchFromStrapi } from '../utils/strapi';
+import { HeroSkeleton } from '@/components/ui/skeleton';
 
 interface HeroData {
   data: {
@@ -43,20 +44,7 @@ const Hero = () => {
   }, []);
 
   if (isLoading || !heroData) {
-    return (
-      <section className="min-h-screen bg-neutral-light relative">
-        <div className="container-custom pt-16 pb-12 sm:pt-25">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 md:space-y-8">
-              <div className="h-12 bg-gray-200 rounded animate-pulse" />
-              <div className="h-8 bg-gray-200 rounded animate-pulse w-1/3" />
-              <div className="h-24 bg-gray-200 rounded animate-pulse" />
-            </div>
-            <div className="h-[500px] md:h-[600px] lg:h-[700px] bg-gray-200 rounded-2xl animate-pulse" />
-          </div>
-        </div>
-      </section>
-    );
+    return <HeroSkeleton />;
   }
 
   const { description, heroImage, imageText } = heroData.data;

@@ -1,17 +1,33 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchAPI } from '@/lib/api';
 import type { Project } from '@/lib/api';
 import Carousel from '../../../components/ui/carousel';
 import MoreProjects from '../../../components/MoreProjects';
+import { ProjectDetailSkeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  const { ref: imageRef, inView: imageInView } = useInView({ threshold: 0.1, triggerOnce: false });
+  const { ref: detailsRef, inView: detailsInView } = useInView({ threshold: 0.1, triggerOnce: false });
+  const { ref: descriptionRef, inView: descriptionInView } = useInView({ threshold: 0.1, triggerOnce: false });
+  const { ref: reviewRef, inView: reviewInView } = useInView({ threshold: 0.1, triggerOnce: false });
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -32,12 +48,61 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
     fetchProject();
   }, [params.slug]);
 
+  // Scroll to top when component mounts or slug changes
+  useEffect(() => {
+    // Use setTimeout to ensure the scroll happens after the component is fully rendered
+    const timer = setTimeout(() => {
+      scrollToTop();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [params.slug]);
+
+  // Also scroll to top when loading completes
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => {
+        scrollToTop();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  // Force scroll to top on mount
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
+  // Listen for route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      scrollToTop();
+    };
+
+    // Add event listener for route changes
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
+
+  // Scroll to top when project data is loaded
+  useEffect(() => {
+    if (project && !loading) {
+      const timer = setTimeout(() => {
+        scrollToTop();
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [project, loading]);
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
-        <div className="w-full max-w-6xl">
-          <div className="text-2xl font-semibold text-center">Loading project...</div>
-        </div>
+      <main className="min-h-screen bg-neutral-light pb-16 px-4 sm:px-6 lg:px-2 flex flex-col items-center">
+        <ProjectDetailSkeleton />
       </main>
     );
   }
@@ -54,13 +119,22 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
 
   return (
     <main className="min-h-screen bg-neutral-light pb-16 px-4 sm:px-6 lg:px-2 flex flex-col items-center">
+      {/* Scroll anchor */}
+      <div ref={topRef} id="top" />
+      
       <div className="w-full max-w-6xl">
         {/* Title */}
         <h1 className="mt-32 text-6xl md:text-7xl font-bold mb-8 flex items-center gap-2 text-left">
           <span>{project.Title}<span className="text-yellow-400">.</span></span>
         </h1>
         {/* Image */}
-        <div className="mb-12">
+        <motion.div
+          ref={imageRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={imageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="mb-12"
+        >
           <Image
             src={project.coverImage.url}
             alt={project.Title}
@@ -68,9 +142,15 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             height={600}
             className="object-cover w-full h-[450px] md:h-[750px] rounded-[2rem]"
           />
-        </div>
+        </motion.div>
         {/* Details Box */}
-        <div className="bg-[#4b6b4a] rounded-[2rem] p-10 md:p-14 text-white grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-8 text-lg w-full mx-auto">
+        <motion.div
+          ref={detailsRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={detailsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="bg-[#4b6b4a] rounded-[2rem] p-10 md:p-14 text-white grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-8 text-lg w-full mx-auto"
+        >
           <div className="space-y-6">
             <div>
               <div className="text-white/70 text-lg">Client:</div>
@@ -107,9 +187,15 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               <div className="font-bold text-2xl md:text-2xl leading-tight">{project.type}</div>
             </div>
           </div>
-        </div>
+        </motion.div>
         {/* Project Description Section */}
-        <section className="w-full max-w-5xl mt-12 bg-transparent">
+        <motion.section
+          ref={descriptionRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={descriptionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="w-full max-w-5xl mt-12 bg-transparent"
+        >
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-left">Project Description</h2>
           <p className="text-lg md:text-xl text-gray-800 mb-6">
             {project.description}
@@ -122,9 +208,15 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               </li>
             ))}
           </ul>
-        </section>
+        </motion.section>
         {/* Client Review Section */}
-        <section className="w-full flex flex-col items-center mt-16">
+        <motion.section
+          ref={reviewRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={reviewInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="w-full flex flex-col items-center mt-16"
+        >
           <div className="w-full max-w-3xl bg-yellow-200 rounded-lg p-6 md:p-8 flex flex-col gap-4 shadow-md">
             <blockquote className="border-l-4 border-yellow-500 pl-4 italic text-gray-900 text-lg md:text-xl">
               {project.review}
@@ -142,7 +234,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               <span className="font-semibold text-gray-900">{project.client}</span>
             </div>
           </div>
-        </section>
+        </motion.section>
         {/* Showcase Section */}
         <section className="w-full flex flex-col items-center mt-24">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-8 flex items-center justify-center gap-2">

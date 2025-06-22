@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { fetchAPI } from "@/lib/api";
 import type { Project } from "@/lib/api";
 import { usePathname } from "next/navigation";
+import { ProjectCardSkeleton } from '@/components/ui/skeleton';
 
 export default function MoreProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -39,7 +40,11 @@ export default function MoreProjects() {
         <h2 className="text-3xl md:text-4xl font-bold mb-10 text-neutral-900 text-center">
           More Projects<span className="text-yellow-400">.</span>
         </h2>
-        <div className="text-lg">Loading projects...</div>
+        <div className="flex flex-wrap gap-10 justify-center">
+          {[...Array(4)].map((_, i) => (
+            <ProjectCardSkeleton key={i} />
+          ))}
+        </div>
       </section>
     );
   }

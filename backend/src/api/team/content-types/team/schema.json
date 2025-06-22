@@ -11,7 +11,7 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "Name": {
+    "name": {
       "type": "string",
       "required": true
     },
@@ -29,6 +29,10 @@
         "videos",
         "audios"
       ]
+    },
+    "showMember": {
+      "type": "boolean",
+      "required": true
     }
   }
 }

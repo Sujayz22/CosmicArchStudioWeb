@@ -1,7 +1,9 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const res = await fetch(`${API_URL}/api/${endpoint}`);
+  const res = await fetch(`${API_URL}/api/${endpoint}`, {
+    next: { revalidate: 3600 },
+  });
   if (!res.ok) {
     throw new Error(`API call failed: ${res.statusText}`);
   }

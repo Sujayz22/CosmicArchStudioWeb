@@ -10,7 +10,7 @@ export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
     });
     const requestUrl = `${STRAPI_URL}/api${path}${queryString ? `?${queryString}` : ''}`;
     
-    console.log('Fetching from:', requestUrl);
+    
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -35,7 +35,6 @@ export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
     }
     
     const data = await response.json();
-    console.log('Strapi response:', data);
     return data;
   } catch (error) {
     console.error('Error fetching from Strapi:', error);

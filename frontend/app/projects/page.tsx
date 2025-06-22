@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { fetchAPI } from '@/lib/api';
 import type { Project } from '@/lib/api';
+import { ProjectCardSkeleton } from '@/components/ui/skeleton';
+import ScrollToTop from '../components/ScrollToTop';
 
 const TABS = [
   { label: 'All', value: 'all' },
@@ -40,8 +42,39 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+        <ScrollToTop />
         <div className="w-full max-w-6xl">
-          <div className="text-2xl font-semibold text-center">Loading projects...</div>
+          {/* Header */}
+          <div className="mt-32 mb-6 flex flex-col items-center">
+            <span className="bg-secondary px-8 py-2 rounded-[2rem] text-6xl font-bold text-black shadow-sm tracking-tight"><h1 className="text-6xl md:text-7xl font-extrabold text-neutral-900 text-center inline-block">
+              Projects<span className="text-neutral-900">.</span>
+            </h1></span>
+            {/* Tabs */}
+            <div className="mt-8 flex justify-center">
+              <div className="flex bg-[#E5E5E5] rounded-xl px-2 py-2 gap-2">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => setSelectedTab(tab.value)}
+                    className={`px-5 py-1.5 rounded-md font-medium transition-colors text-base
+                      ${selectedTab === tab.value
+                        ? 'bg-[#4B6B4A] text-white shadow'
+                        : 'bg-transparent text-black hover:bg-[#d1d5db]'}
+                    `}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Skeleton Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-6 lg:px-2">
+            {[...Array(6)].map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
       </main>
     );
@@ -59,6 +92,7 @@ export default function ProjectsPage() {
 
   return (
     <main className="min-h-screen bg-neutral-light pb-16 flex flex-col items-center">
+      <ScrollToTop />
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="mt-32 mb-6 flex flex-col items-center">

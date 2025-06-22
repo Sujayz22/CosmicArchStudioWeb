@@ -2,15 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CheckIcon, ChevronRightIcon } from "lucide-react";
-import { AnimatedSubscribeButton } from '@/components/magicui/animated-subscribe-button';
+import { MorphingText } from '@/components/magicui/morphing-text';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
 const Footer = () => {
-  const [ref, inView] = useInView({
+  const texts = ["CosmicArch", "Studio.", "Design", "Elevated."];
+  const { ref, inView } = useInView({
     threshold: 0.1,
-    triggerOnce: false,
+    triggerOnce: false, // Set to false to enable exit animation
   });
 
   return (
@@ -20,106 +20,47 @@ const Footer = () => {
         initial={{ opacity: 0, y: 50 }}
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
         exit={{ opacity: 0, y: 50 }}
-        transition={{
-          duration: 0.8,
-          ease: 'easeOut',
-          opacity: { duration: 0.6 },
-          y: { duration: 0.8 },
-        }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
         className="bg-primary text-white rounded-[2.5rem] mx-4 mb-4 md:mx-8 md:mb-12"
       >
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="container-custom py-10 md:py-20"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-            {/* Services Column */}
-            <div className="space-y-6">
-              <h3 className="text-xs uppercase tracking-wider text-neutral-300 flex md:items-center justify-center md:justify-start gap-2">
-                <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-                Services
-              </h3>
-              <ul className="space-y-4 text-center md:text-left md:px-4">
-                <li>
-                  <Link href="/services/architectural-design" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Architectural Design
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/interior-design" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Interior Design
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/renovation" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Renovation
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/space-planning" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Space Planning
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services/consulting" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Consulting
-                  </Link>
-                </li>
-              </ul>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column: Morphing Text */}
+            <div className="text-center lg:text-left">
+              <MorphingText
+                texts={texts}
+                className="text-5xl md:text-8xl lg:text-9xl font-bold text-secondary !justify-start"
+              />
             </div>
 
-            {/* Sitemap Column */}
-            <div className="space-y-6">
-              <h3 className="text-xs uppercase tracking-wider text-neutral-300 flex md:items-center justify-center md:justify-start gap-2">
-                <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-                Quick Links
+            {/* Right Column: Quick Links */}
+            <div className="space-y-6 lg:right">
+              <h3 className="text-sm uppercase tracking-wider text-neutral-300 flex items-center justify-center lg:center gap-2">
+                <div className="w-2 h-2 bg-secondary rounded-full" />
+                QUICK LINKS
               </h3>
-              <ul className="space-y-4 text-center md:text-left md:px-4">
-                <li>
-                  <Link href="/" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/projects" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Projects
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/gallery" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Gallery
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/reviews" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Reviews
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-2xl font-medium hover:text-secondary transition-colors">
-                    Contact
-                  </Link>
-                </li>
+              <ul className="space-y-3 text-center lg:text-center text-xl">
+                <li><Link href="/" className="hover:text-secondary transition-colors">Home</Link></li>
+                <li><Link href="/about" className="hover:text-secondary transition-colors">About</Link></li>
+                <li><Link href="/projects" className="hover:text-secondary transition-colors">Projects</Link></li>
+                <li><Link href="/gallery" className="hover:text-secondary transition-colors">Gallery</Link></li>
+                <li><Link href="/reviews" className="hover:text-secondary transition-colors">Reviews</Link></li>
+                <li><Link href="/contact" className="hover:text-secondary transition-colors">Contact</Link></li>
               </ul>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="mt-20 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-xl">Cosmic</span>
-              <span className="font-sans font-light text-xl">Arch Studio</span>
-              <span className="font-sans font-light text-xl">© {new Date().getFullYear()}</span>
+          <div className="mt-20 pt-8 border-t border-white flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-neutral-400">
+            <div className="font-medium text-gray-300">
+              Cosmic Arch Studio © {new Date().getFullYear()}
             </div>
-            <div className="flex items-center gap-8 text-sm text-neutral-400">
+            <div className="flex items-center gap-6">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
             </div>
