@@ -242,7 +242,7 @@ The backend provides a RESTful API with the following endpoints:
 
 <div align="center">
 
-**Made with ❤️ by the Cosmic Arch Studio Team**
+**Made with ❤️ by the Sujay Arun Panda**
 
 [![GitHub stars](https://img.shields.io/github/stars/yourusername/cosmic-arch-studio?style=social)](https://github.com/yourusername/cosmic-arch-studio)
 [![GitHub forks](https://img.shields.io/github/forks/yourusername/cosmic-arch-studio?style=social)](https://github.com/yourusername/cosmic-arch-studio)
