@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://calm-addition-271c24a97d.strapiapp.com';
+
 
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {

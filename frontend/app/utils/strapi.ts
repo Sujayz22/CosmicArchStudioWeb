@@ -1,7 +1,10 @@
 import qs from 'qs';
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+const STRAPI_URL = process.env.NEXT_PUBLIC_API_URL;
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
+
+// Debug log to verify environment variable
+console.log('🔧 Strapi URL being used:', STRAPI_URL);
 
 export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
   try {
