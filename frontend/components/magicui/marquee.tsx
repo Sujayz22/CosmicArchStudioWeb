@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ComponentPropsWithoutRef } from "react";
+import { ComponentPropsWithoutRef, useState } from "react";
 
 interface MarqueeProps extends ComponentPropsWithoutRef<"div"> {
   /**
@@ -40,6 +40,11 @@ interface MarqueeProps extends ComponentPropsWithoutRef<"div"> {
    * @default false
    */
   fullHeight?: boolean;
+  /**
+   * Animation speed in pixels per second
+   * @default 50
+   */
+  speed?: number;
 }
 
 export function Marquee({
@@ -51,13 +56,27 @@ export function Marquee({
   repeat = 4,
   fullWidth = false,
   fullHeight = false,
+  speed = 50,
   ...props
 }: MarqueeProps) {
+  // Calculate duration based on speed (lower speed = longer duration)
+  const duration = Math.max(20, 100 - speed); // 20s minimum, 100s maximum
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Get animation name based on direction and orientation
+  const getAnimationName = () => {
+    if (vertical) {
+      return reverse ? 'marquee-vertical-reverse' : 'marquee-vertical';
+    } else {
+      return reverse ? 'marquee-reverse' : 'marquee';
+    }
+  };
+
   return (
     <div
       {...props}
       className={cn(
-        "marquee-container group relative flex w-full overflow-hidden px-8 before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-32 before:bg-gradient-to-r before:from-neutral-100 before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-32 after:bg-gradient-to-l after:from-neutral-100 after:to-transparent",
+        `group relative flex w-full overflow-hidden px-4 before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-32 before:bg-gradient-to-r before:from-neutral-100 before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-32 after:bg-gradient-to-l after:from-neutral-100 after:to-transparent`,
         {
           "flex-row": !vertical,
           "flex-col": vertical,
@@ -66,34 +85,38 @@ export function Marquee({
           "before:from-[#495f43] after:from-[#495f43]": className?.includes("bg-[#495f43]"),
           "before:from-neutral-100 after:from-neutral-100": className?.includes("bg-neutral-200"),
           "before:from-dark after:from-dark": className?.includes("bg-dark"),
-          "pause-on-hover": pauseOnHover,
         },
         className,
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div 
         className={cn(
           "flex shrink-0",
-          reverse ? "marquee-content-reverse" : "marquee-content",
           {
-            "flex-row [&>*]:mr-12 [&>*]:mb-16": !vertical,
-            "flex-col [&>*]:mb-12": vertical,
+            "flex-row": !vertical,
+            "flex-col": vertical,
           }
         )}
+        style={{
+          animation: `${getAnimationName()} ${duration}s linear infinite`,
+          animationPlayState: isHovered && pauseOnHover ? 'paused' : 'running',
+          willChange: 'transform'
+        }}
       >
-        {children}
-      </div>
-      <div 
-        className={cn(
-          "flex shrink-0",
-          reverse ? "marquee-content-reverse" : "marquee-content",
-          {
-            "flex-row [&>*]:mr-12 [&>*]:mb-16": !vertical,
-            "flex-col [&>*]:mb-12": vertical,
-          }
-        )}
-      >
-        {children}
+        {/* First copy */}
+        <div className="flex shrink-0">
+          {children}
+        </div>
+        {/* Second copy for seamless loop */}
+        <div className="flex shrink-0">
+          {children}
+        </div>
+        {/* Third copy for extra safety */}
+        <div className="flex shrink-0">
+          {children}
+        </div>
       </div>
     </div>
   );

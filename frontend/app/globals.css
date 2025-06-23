@@ -1,4 +1,3 @@
-@import './marquee.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -108,7 +107,16 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-33.333%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-33.333%);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 
@@ -117,7 +125,16 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-100%);
+    transform: translateY(-33.333%);
+  }
+}
+
+@keyframes marquee-vertical-reverse {
+  0% {
+    transform: translateY(-33.333%);
+  }
+  100% {
+    transform: translateY(0);
   }
 }
 
@@ -127,7 +144,7 @@
 }
 
 .marquee-animation-reverse {
-  animation: marquee 60s linear infinite reverse;
+  animation: marquee-reverse 60s linear infinite;
 }
 
 .marquee-animation-paused {
@@ -140,7 +157,15 @@
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-100%);
+      transform: translateX(-33.333%);
+    }
+  }
+  @keyframes marquee-reverse {
+    0% {
+      transform: translateX(-33.333%);
+    }
+    100% {
+      transform: translateX(0);
     }
   }
   @keyframes marquee-vertical {
@@ -148,7 +173,15 @@
       transform: translateY(0);
     }
     100% {
-      transform: translateY(-100%);
+      transform: translateY(-33.333%);
+    }
+  }
+  @keyframes marquee-vertical-reverse {
+    0% {
+      transform: translateY(-33.333%);
+    }
+    100% {
+      transform: translateY(0);
     }
   }
 }

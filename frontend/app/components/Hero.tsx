@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { TypingAnimation } from "@/components/magicui/typing-animation";
+import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import Link from 'next/link';
 import { fetchFromStrapi } from '../utils/strapi';
@@ -46,6 +46,29 @@ const Hero = () => {
   if (isLoading || !heroData) {
     return <HeroSkeleton />;
   }
+  const words = [
+    {
+      text: "Building",
+    },
+    {
+      text: "Your",
+    },
+    {
+      text: "Dreams, ",
+    },
+    {
+      text: "Brick",
+    },
+    {
+      text: "by",
+    },
+    {
+      text: "Beautiful",
+    },
+    {
+      text: "Brick.",
+    },
+  ];
 
   const { description, heroImage, imageText } = heroData.data;
 
@@ -55,10 +78,10 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Text Content */}
           <div className="space-y-6 md:space-y-8">
-              <TypingAnimation duration={70} startOnView className="text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-medium leading-[1.1] text-black">
-                Building Your Dreams, Brick by Beautiful Brick.
-              </TypingAnimation>
-            
+              <TypewriterEffect 
+                words={words} 
+                className="text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-medium leading-[1.1] text-black text-left" 
+              />
             <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

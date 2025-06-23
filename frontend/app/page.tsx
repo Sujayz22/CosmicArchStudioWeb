@@ -106,6 +106,31 @@ export default function Home() {
               url: review.profilepic.formats?.thumbnail?.url || review.profilepic.url
             } : null
           })));
+        } else {
+          // Set some fallback reviews for testing
+          setReviews([
+            {
+              name: "John Smith",
+              type: "Kitchen Renovation",
+              review: "Amazing work! The kitchen looks fantastic and the quality is outstanding. Highly recommend!",
+              rating: 5,
+              profilepic: null
+            },
+            {
+              name: "Sarah Johnson",
+              type: "Bathroom Remodel",
+              review: "Professional service from start to finish. The bathroom transformation exceeded our expectations.",
+              rating: 5,
+              profilepic: null
+            },
+            {
+              name: "Mike Davis",
+              type: "Garage Conversion",
+              review: "Excellent craftsmanship and attention to detail. The garage conversion is perfect for our needs.",
+              rating: 5,
+              profilepic: null
+            }
+          ]);
         }
 
         if (servicesResponse) {
@@ -273,6 +298,7 @@ export default function Home() {
               className="w-full"
               repeat={2}
               pauseOnHover={false}
+              speed={30}
             >
               {marqueeImages.map((src, i) => (
                 <div key={i} className="min-w-[280px] sm:min-w-[320px] h-[300px] sm:h-[400px] bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center shadow mx-2">
@@ -460,17 +486,19 @@ export default function Home() {
               Hear from our happy clients about their experience working with Cosmic Arch Studio and the quality of our craftsmanship.
             </p>
           </div>
+          
           {/* First Marquee Row */}
           <div className="overflow-hidden">
             <Marquee
               className="w-full my-2 lg:my-16"
               pauseOnHover={true}
               fullWidth={true}
+              speed={40}
             >
               {reviews.map((review, i) => (
                 <div
                   key={i}
-                  className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
+                  className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 mx-4 mb-8 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
                 >
                   <div>
                     <div className="flex items-center mb-3">
@@ -516,11 +544,12 @@ export default function Home() {
               pauseOnHover={true}
               reverse={true}
               fullWidth={true}
+              speed={40}
             >
               {[...reviews].reverse().map((review, i) => (
                 <div
                   key={i}
-                  className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
+                  className={`w-[280px] sm:w-[400px] min-w-[280px] sm:min-w-[400px] rounded-2xl shadow-xl p-4 sm:p-8 flex flex-col justify-between h-[240px] sm:h-[280px] border border-neutral-100/50 mx-4 mb-8 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f3f4f6]'} hover:shadow-2xl transition-shadow duration-300`}
                 >
                   <div>
                     <div className="flex items-center mb-3">
