@@ -268,9 +268,9 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="sm:overflow-visible overflow-hidden">
+          <div className="overflow-hidden">
             <Marquee
-              className="group relative flex w-full overflow-hidden [--duration:60s] px-8 before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-32 before:bg-gradient-to-r before:from-neutral-100 before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-32 after:bg-gradient-to-l after:from-neutral-100 after:to-transparent"
+              className="w-full"
               repeat={2}
               pauseOnHover={false}
             >
@@ -461,9 +461,9 @@ export default function Home() {
             </p>
           </div>
           {/* First Marquee Row */}
-          <div className="sm:overflow-visible overflow-hidden">
+          <div className="overflow-hidden">
             <Marquee
-              className="w-full my-16 overflow-hidden"
+              className="w-full my-2 lg:my-16"
               pauseOnHover={true}
               fullWidth={true}
             >
@@ -510,9 +510,9 @@ export default function Home() {
             </Marquee>
           </div>
           {/* Second Marquee Row (opposite direction) */}
-          <div className="sm:overflow-visible overflow-hidden">
+          <div className="overflow-hidden">
             <Marquee
-              className="w-full my-8 overflow-hidden"
+              className="w-full my-8"
               pauseOnHover={true}
               reverse={true}
               fullWidth={true}

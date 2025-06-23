@@ -1,0 +1,43 @@
+/* Marquee Animation Styles */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.marquee-container {
+  --duration: 60s;
+}
+
+.marquee-content {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.marquee-content-reverse {
+  animation: marquee var(--duration) linear infinite reverse;
+}
+
+.marquee-content-paused {
+  animation-play-state: paused;
+}
+
+/* Hover pause functionality - only when pauseOnHover is enabled */
+.marquee-container.pause-on-hover:hover .marquee-content {
+  animation-play-state: paused;
+}
+
+.marquee-container.pause-on-hover:hover .marquee-content-reverse {
+  animation-play-state: paused;
+} 

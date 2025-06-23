@@ -1,3 +1,4 @@
+@import './marquee.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -118,6 +119,19 @@
   100% {
     transform: translateY(-100%);
   }
+}
+
+/* Explicit CSS fallbacks for marquee animations */
+.marquee-animation {
+  animation: marquee 60s linear infinite;
+}
+
+.marquee-animation-reverse {
+  animation: marquee 60s linear infinite reverse;
+}
+
+.marquee-animation-paused {
+  animation-play-state: paused;
 }
 
 @theme inline {

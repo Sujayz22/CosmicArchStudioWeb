@@ -48,12 +48,8 @@ export default function AboutPage() {
         </div>
 
         {/* Mobile View */}
-        <motion.div
-          ref={mainContentRef}
-          initial={{ opacity: 0, y: 50 }}
-          animate={mainContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-full max-w-6xl md:hidden flex flex-col gap-4"
+        <div
+          className="sm:hidden w-full max-w-6xl flex flex-col gap-4"
         >
           {/* Top Text Block */}
           <div className="bg-primary rounded-2xl p-4 text-white text-sm font-medium leading-snug">
@@ -103,7 +99,7 @@ export default function AboutPage() {
           <div className="bg-white rounded-2xl p-4 text-primary text-sm font-medium shadow-inner">
             Specializing in architecture and interior design, we approach every project holistically—from the foundation to the final finishes. Whether residential, commercial, or mixed-use, our work reflects a deep commitment to context, sustainability, and the unique vision of each client.<br />With a team of passionate designers, architects, and collaborators, we turn ideas into timeless spaces that tell a story.
           </div>
-        </motion.div>
+        </div>
 
         {/* Desktop View */}
         <motion.div
@@ -111,7 +107,7 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 50 }}
           animate={mainContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="hidden md:block w-full max-w-6xl"
+          className="hidden sm:block w-full max-w-6xl"
         >
           <BentoGrid className="w-full max-w-6xl grid-rows-6 bg-primary rounded-3xl p-10 shadow-2xl">
             {/* Top Text Block */}
