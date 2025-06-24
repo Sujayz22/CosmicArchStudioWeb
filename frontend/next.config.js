@@ -25,7 +25,6 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['framer-motion', 'react-icons'],
   },
   logging: {
