@@ -23,6 +23,7 @@ export default ({ env }) => ({
       },
     },
     "strapi-csv-import-export": {
+      enabled: true,
       config: {
         authorizedExports: [
           "api::machine.machine",
