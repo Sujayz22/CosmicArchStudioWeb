@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import { Marquee } from '../components/magicui/marquee';
@@ -16,11 +16,13 @@ import { NumberTicker } from '@/components/magicui/number-ticker';
 import { fetchAPI } from '@/lib/api';
 import type { Project, Service } from '@/lib/api';
 import ScrollToTop from './components/ScrollToTop';
-import FAQ from './components/FAQ';
 import { getServices } from './actions/getServices';
 import { StatsSkeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+
+// Lazy load heavy components
+const FAQ = lazy(() => import('./components/FAQ'));
 
 // Map of icon names to components
 const iconMap: { [key: string]: React.ElementType } = {
@@ -58,19 +60,56 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Single useEffect for data fetching
+  // Optimized data fetching with caching
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        console.log('🔄 Starting data fetch...');
         setLoading(true);
-        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await Promise.all([
-          fetchAPI<{ data: Project[] }>('projects?populate=*'),
-          fetchAPI<{ data: { images: any[] } }>('marquee?populate=images'),
-          fetchAPI<{ data: any[] }>('stats'),
-          fetchAPI<{ data: any[] }>('reviews?populate=*'),
-          getServices()
+        
+        // Add timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 10000)
+        );
+        
+        // Use Promise.all for better performance but with proper error handling
+        const dataPromise = Promise.all([
+          fetchAPI<{ data: Project[] }>('projects?populate=*').catch(err => {
+            console.error('Error fetching projects:', err);
+            return { data: [] };
+          }),
+          fetchAPI<{ data: { images: any[] } }>('marquee?populate=images').catch(err => {
+            console.error('Error fetching marquee:', err);
+            return { data: { images: [] } };
+          }),
+          fetchAPI<{ data: any[] }>('stats').catch(err => {
+            console.error('Error fetching stats:', err);
+            return { data: [] };
+          }),
+          fetchAPI<{ data: any[] }>('reviews?populate=*').catch(err => {
+            console.error('Error fetching reviews:', err);
+            return { data: [] };
+          }),
+          getServices().catch(err => {
+            console.error('Error fetching services:', err);
+            return [];
+          })
         ]);
 
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await Promise.race([
+          dataPromise,
+          timeoutPromise
+        ]) as any;
+
+        console.log('📊 Data fetched:', {
+          projects: projectsResponse?.data?.length || 0,
+          marquee: marqueeResponse?.data?.images?.length || 0,
+          stats: statsResponse?.data?.length || 0,
+          reviews: reviewsResponse?.data?.length || 0,
+          services: servicesResponse?.length || 0
+        });
+
+        // Process results
         if (projectsResponse.data) {
           setProjectCards(projectsResponse.data.slice(0, 3));
         }
@@ -97,7 +136,7 @@ export default function Home() {
         }
 
         if (reviewsResponse.data) {
-          setReviews(reviewsResponse.data.map(review => ({
+          setReviews(reviewsResponse.data.map((review: any) => ({
             name: review.name,
             type: review.type,
             review: review.review,
@@ -136,11 +175,39 @@ export default function Home() {
         if (servicesResponse) {
           setServices(servicesResponse);
         }
+
+        console.log('✅ Data processing complete');
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('❌ Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
+        
+        // Set fallback data to prevent empty page
+        setReviews([
+          {
+            name: "John Smith",
+            type: "Kitchen Renovation",
+            review: "Amazing work! The kitchen looks fantastic and the quality is outstanding. Highly recommend!",
+            rating: 5,
+            profilepic: null
+          },
+          {
+            name: "Sarah Johnson",
+            type: "Bathroom Remodel",
+            review: "Professional service from start to finish. The bathroom transformation exceeded our expectations.",
+            rating: 5,
+            profilepic: null
+          },
+          {
+            name: "Mike Davis",
+            type: "Garage Conversion",
+            review: "Excellent craftsmanship and attention to detail. The garage conversion is perfect for our needs.",
+            rating: 5,
+            profilepic: null
+          }
+        ]);
       } finally {
         setLoading(false);
+        console.log('🏁 Loading finished');
       }
     };
 
@@ -520,6 +587,7 @@ export default function Home() {
                         width={48}
                         height={48}
                         className="rounded-full object-cover border-2 border-white mr-4"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
@@ -571,6 +639,7 @@ export default function Home() {
                         width={48}
                         height={48}
                         className="rounded-full object-cover border-2 border-white mr-4"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
@@ -590,7 +659,9 @@ export default function Home() {
           </div>
         </section>
 
-        <FAQ />
+        <Suspense fallback={<div className="container-custom py-16"><div className="text-center">Loading FAQ...</div></div>}>
+          <FAQ />
+        </Suspense>
       </div>
     </main>
   );

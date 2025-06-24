@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ComponentPropsWithoutRef, useState } from "react";
+import { ComponentPropsWithoutRef, useState, useEffect } from "react";
 
 interface MarqueeProps extends ComponentPropsWithoutRef<"div"> {
   /**
@@ -62,14 +62,34 @@ export function Marquee({
   // Calculate duration based on speed (lower speed = longer duration)
   const duration = Math.max(20, 100 - speed); // 20s minimum, 100s maximum
   const [isHovered, setIsHovered] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Get animation name based on direction and orientation
-  const getAnimationName = () => {
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Get the appropriate CSS class based on direction and orientation
+  const getAnimationClass = () => {
     if (vertical) {
-      return reverse ? 'marquee-vertical-reverse' : 'marquee-vertical';
+      return reverse ? 'marquee-animation-vertical-reverse' : 'marquee-animation-vertical';
     } else {
-      return reverse ? 'marquee-reverse' : 'marquee';
+      return reverse ? 'marquee-animation-reverse' : 'marquee-animation';
     }
+  };
+
+  // Get the appropriate CSS class based on direction and orientation
+  const getAnimationStyle = () => {
+    const animationName = vertical 
+      ? (reverse ? 'marquee-vertical-reverse' : 'marquee-vertical')
+      : (reverse ? 'marquee-reverse' : 'marquee');
+
+    return {
+      animation: `${animationName} ${duration}s linear infinite`,
+      animationPlayState: isHovered && pauseOnHover ? 'paused' : 'running',
+      willChange: 'transform',
+      transform: 'translateZ(0)'
+    };
   };
 
   return (
@@ -93,17 +113,13 @@ export function Marquee({
     >
       <div 
         className={cn(
-          "flex shrink-0",
+          "flex shrink-0 marquee-hardware-accelerated",
           {
             "flex-row": !vertical,
             "flex-col": vertical,
           }
         )}
-        style={{
-          animation: `${getAnimationName()} ${duration}s linear infinite`,
-          animationPlayState: isHovered && pauseOnHover ? 'paused' : 'running',
-          willChange: 'transform'
-        }}
+        style={getAnimationStyle()}
       >
         {/* First copy */}
         <div className="flex shrink-0">

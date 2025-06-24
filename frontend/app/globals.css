@@ -102,6 +102,7 @@
   }
 }
 
+/* Marquee Animations - Production Ready */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -138,17 +139,38 @@
   }
 }
 
-/* Explicit CSS fallbacks for marquee animations */
+/* Ensure animations are not purged */
 .marquee-animation {
-  animation: marquee 60s linear infinite;
+  animation: marquee 60s linear infinite !important;
 }
 
 .marquee-animation-reverse {
-  animation: marquee-reverse 60s linear infinite;
+  animation: marquee-reverse 60s linear infinite !important;
+}
+
+.marquee-animation-vertical {
+  animation: marquee-vertical 60s linear infinite !important;
+}
+
+.marquee-animation-vertical-reverse {
+  animation: marquee-vertical-reverse 60s linear infinite !important;
 }
 
 .marquee-animation-paused {
-  animation-play-state: paused;
+  animation-play-state: paused !important;
+}
+
+/* Force hardware acceleration */
+.marquee-container {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Ensure smooth animation */
+.marquee-content {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 @theme inline {

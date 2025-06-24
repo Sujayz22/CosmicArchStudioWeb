@@ -3,17 +3,12 @@ import qs from 'qs';
 const STRAPI_URL = process.env.NEXT_PUBLIC_API_URL;
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 
-// Debug log to verify environment variable
-console.log('🔧 Strapi URL being used:', STRAPI_URL);
-
 export async function fetchFromStrapi(path: string, urlParamsObject = {}) {
   try {
     const queryString = qs.stringify(urlParamsObject, {
       encodeValuesOnly: true
     });
     const requestUrl = `${STRAPI_URL}/api${path}${queryString ? `?${queryString}` : ''}`;
-    
-    
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',

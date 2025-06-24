@@ -1,0 +1,73 @@
+/* Marquee Animations - Dedicated file for production reliability */
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-33.333%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-33.333%);
+  }
+}
+
+@keyframes marquee-vertical-reverse {
+  0% {
+    transform: translateY(-33.333%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Production-ready marquee classes */
+.marquee-animation {
+  animation: marquee 60s linear infinite !important;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.marquee-animation-reverse {
+  animation: marquee-reverse 60s linear infinite !important;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.marquee-animation-vertical {
+  animation: marquee-vertical 60s linear infinite !important;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.marquee-animation-vertical-reverse {
+  animation: marquee-vertical-reverse 60s linear infinite !important;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.marquee-paused {
+  animation-play-state: paused !important;
+}
+
+/* Hardware acceleration */
+.marquee-hardware-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+} 
