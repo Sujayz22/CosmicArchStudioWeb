@@ -6,6 +6,25 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Marquee animation classes
+    'marquee-animation',
+    'marquee-animation-reverse',
+    'marquee-animation-vertical',
+    'marquee-animation-vertical-reverse',
+    'marquee-animation-paused',
+    'marquee-container',
+    'marquee-content',
+    'marquee-hardware-accelerated',
+    // Animation utilities
+    'animate-marquee',
+    'animate-marquee-vertical',
+    // Keyframe names
+    'marquee',
+    'marquee-reverse',
+    'marquee-vertical',
+    'marquee-vertical-reverse'
+  ],
   theme: {
   	extend: {
   		colors: {
@@ -93,7 +112,15 @@ module.exports = {
   					transform: 'translateX(0)'
   				},
   				'100%': {
-  					transform: 'translateX(-100%)'
+  					transform: 'translateX(-33.333%)'
+  				}
+  			},
+  			'marquee-reverse': {
+  				'0%': {
+  					transform: 'translateX(-33.333%)'
+  				},
+  				'100%': {
+  					transform: 'translateX(0)'
   				}
   			},
   			'marquee-vertical': {
@@ -101,7 +128,15 @@ module.exports = {
   					transform: 'translateY(0)'
   				},
   				'100%': {
-  					transform: 'translateY(-100%)'
+  					transform: 'translateY(-33.333%)'
+  				}
+  			},
+  			'marquee-vertical-reverse': {
+  				'0%': {
+  					transform: 'translateY(-33.333%)'
+  				},
+  				'100%': {
+  					transform: 'translateY(0)'
   				}
   			}
   		},
@@ -109,7 +144,9 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			marquee: 'marquee var(--duration) linear infinite',
-  			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
+  			'marquee-reverse': 'marquee-reverse var(--duration) linear infinite',
+  			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+  			'marquee-vertical-reverse': 'marquee-vertical-reverse var(--duration) linear infinite'
   		}
   	}
   },

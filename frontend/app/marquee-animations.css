@@ -1,5 +1,4 @@
-/* Marquee Animations - Dedicated file for production reliability */
-
+/* Marquee Animations - Production Safe */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -36,32 +35,24 @@
   }
 }
 
-/* Production-ready marquee classes */
+/* Animation classes - always preserved */
 .marquee-animation {
   animation: marquee 60s linear infinite !important;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 .marquee-animation-reverse {
   animation: marquee-reverse 60s linear infinite !important;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 .marquee-animation-vertical {
   animation: marquee-vertical 60s linear infinite !important;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 .marquee-animation-vertical-reverse {
   animation: marquee-vertical-reverse 60s linear infinite !important;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
-.marquee-paused {
+.marquee-animation-paused {
   animation-play-state: paused !important;
 }
 
@@ -70,4 +61,22 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+  will-change: transform;
+}
+
+/* Utility classes */
+.animate-marquee {
+  animation: marquee var(--duration, 60s) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 60s) linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse var(--duration, 60s) linear infinite;
+}
+
+.animate-marquee-vertical-reverse {
+  animation: marquee-vertical-reverse var(--duration, 60s) linear infinite;
 } 

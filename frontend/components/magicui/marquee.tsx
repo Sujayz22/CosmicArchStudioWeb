@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from "@/lib/utils";
 import { ComponentPropsWithoutRef, useState, useEffect } from "react";
 
@@ -91,6 +93,32 @@ export function Marquee({
       transform: 'translateZ(0)'
     };
   };
+
+  // Don't render until client-side to prevent hydration issues
+  if (!isClient) {
+    return (
+      <div
+        {...props}
+        className={cn(
+          `group relative flex w-full overflow-hidden px-4 before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-32 before:bg-gradient-to-r before:from-neutral-100 before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-32 after:bg-gradient-to-l after:from-neutral-100 after:to-transparent`,
+          {
+            "flex-row": !vertical,
+            "flex-col": vertical,
+            "w-full": fullWidth,
+            "h-full": fullHeight,
+            "before:from-[#495f43] after:from-[#495f43]": className?.includes("bg-[#495f43]"),
+            "before:from-neutral-100 after:from-neutral-100": className?.includes("bg-neutral-200"),
+            "before:from-dark after:from-dark": className?.includes("bg-dark"),
+          },
+          className,
+        )}
+      >
+        <div className="flex shrink-0">
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
