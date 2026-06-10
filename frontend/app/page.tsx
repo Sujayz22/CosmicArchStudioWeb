@@ -67,11 +67,6 @@ export default function Home() {
         console.log('🔄 Starting data fetch...');
         setLoading(true);
         
-        // Add timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 10000)
-        );
-        
         // Use Promise.all for better performance but with proper error handling
         const dataPromise = Promise.all([
           fetchAPI<{ data: Project[] }>('projects?populate=*').catch(err => {
@@ -96,10 +91,7 @@ export default function Home() {
           })
         ]);
 
-        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await Promise.race([
-          dataPromise,
-          timeoutPromise
-        ]) as any;
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await dataPromise as any;
 
         console.log('📊 Data fetched:', {
           projects: projectsResponse?.data?.length || 0,
