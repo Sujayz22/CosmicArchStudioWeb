@@ -42,6 +42,14 @@ interface HomePageData {
   reviews: { name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[];
 }
 
+type HomePageResponseTuple = [
+  { data: Project[] },
+  { data: { images: any[] } },
+  { data: any[] },
+  { data: any[] },
+  Service[]
+];
+
 export default function Home() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -91,7 +99,12 @@ export default function Home() {
           })
         ]);
 
-        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await dataPromise as any;
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), 30000)
+        );
+
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] =
+          await Promise.race([dataPromise, timeoutPromise]) as HomePageResponseTuple;
 
         console.log('📊 Data fetched:', {
           projects: projectsResponse?.data?.length || 0,
