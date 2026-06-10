@@ -42,6 +42,14 @@ interface HomePageData {
   reviews: { name: string; type: string; review: string; rating: number; profilepic: { url: string } | null }[];
 }
 
+type HomePageResponseTuple = [
+  { data: Project[] },
+  { data: { images: any[] } },
+  { data: any[] },
+  { data: any[] },
+  Service[]
+];
+
 export default function Home() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -67,11 +75,6 @@ export default function Home() {
         console.log('🔄 Starting data fetch...');
         setLoading(true);
         
-        // Add timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 10000)
-        );
-        
         // Use Promise.all for better performance but with proper error handling
         const dataPromise = Promise.all([
           fetchAPI<{ data: Project[] }>('projects?populate=*').catch(err => {
@@ -96,10 +99,12 @@ export default function Home() {
           })
         ]);
 
-        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] = await Promise.race([
-          dataPromise,
-          timeoutPromise
-        ]) as any;
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout')), 30000)
+        );
+
+        const [projectsResponse, marqueeResponse, statsResponse, reviewsResponse, servicesResponse] =
+          await Promise.race([dataPromise, timeoutPromise]) as HomePageResponseTuple;
 
         console.log('📊 Data fetched:', {
           projects: projectsResponse?.data?.length || 0,
